@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class CommandListener extends ListenerAdapter {
 
@@ -46,7 +47,7 @@ public class CommandListener extends ListenerAdapter {
                         .setTitle("Voicestats")
                         .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(), member.getUser().getEffectiveAvatarUrl())
                         .addField("Connected Times", jsonObject.getString("connectedTimes"), true)
-                        .addField("Time Connected", DateFormat.getTimeInstance(DateFormat.MEDIUM).format(calendar.getTime()), true)
+                        .addField("Time Connected", DateFormat.getTimeInstance(DateFormat.MEDIUM, Locale.GERMAN).format(calendar.getTime()), true)
                         .build()).queue();
     }
 
