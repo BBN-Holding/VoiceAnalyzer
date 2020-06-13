@@ -34,7 +34,7 @@ public class Main {
         Rethink rethink = new Rethink(jsonObject);
         rethink.connect();
         try {
-            JDA jda = JDABuilder.createDefault(jsonObject.getString("BOT_TOKEN"), GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+            JDA jda = JDABuilder.createDefault(jsonObject.getString("BOT_TOKEN"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
                     .addEventListeners(new Voicelistener(rethink), new CommandListener(rethink)).build();
         } catch (LoginException e) {
             e.printStackTrace();

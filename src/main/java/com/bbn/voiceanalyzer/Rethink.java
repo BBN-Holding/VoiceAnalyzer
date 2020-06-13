@@ -7,6 +7,7 @@ import com.rethinkdb.net.Result;
 import net.dv8tion.jda.api.entities.Member;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Rethink {
@@ -105,6 +106,18 @@ public class Rethink {
         }
         createMember(member);
         return get(member);
+    }
+
+    public ArrayList<JSONObject> getAll(long guildid) {
+        Result result = r.table("member").run(conn);
+        ArrayList<JSONObject> all = new ArrayList<>();
+        while (result.hasNext()) {
+            JSONObject jsonObject = new JSONObject((LinkedHashMap) result.next());
+            if (jsonObject.getString("guildid").equals(String.valueOf(guildid))) {
+                all.add(jsonObject);
+            }
+        }
+        return all;
     }
 
     public void setToMember(String key, String value, Member member) {
