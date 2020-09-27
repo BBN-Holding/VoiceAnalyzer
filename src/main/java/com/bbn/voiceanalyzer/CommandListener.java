@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.*;
 
 public class CommandListener extends ListenerAdapter {
@@ -60,9 +61,13 @@ public class CommandListener extends ListenerAdapter {
                         }
                 );
             }
-            event.getChannel().sendMessage(new EmbedBuilder().setTitle("Voice Toplist").setDescription(sb.toString()).build()).queue();
-        } else {
-            if (!event.getMessage().getContentRaw().startsWith("-stats")) return;
+            event.getChannel().sendMessage(new EmbedBuilder()
+                    .setTitle("Voice Toplist")
+                    .setDescription(sb.toString())
+                    .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
+                    .setTimestamp(Instant.now())
+                    .build()).queue();
+        } else if(event.getMessage().getContentRaw().startsWith("-stats")) {
 
             Member member = event.getMember();
             if (event.getMessage().getMentionedMembers().size() == 1)
@@ -93,6 +98,8 @@ public class CommandListener extends ListenerAdapter {
                             .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(), member.getUser().getEffectiveAvatarUrl())
                             .addField("Connected Times", jsonObject.getString("connectedTimes"), true)
                             .addField("Time Connected", String.format("%02d Days %02d:%02d:%02d", elapsedDays, hoursDisplay, minutesDisplay, secondsDisplay), true)
+                            .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
+                            .setTimestamp(Instant.now())
                             .build()).queue();
         }
     }
