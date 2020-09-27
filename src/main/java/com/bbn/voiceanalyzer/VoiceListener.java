@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import javax.annotation.Nonnull;
 import java.util.Date;
 
-public class Voicelistener extends ListenerAdapter {
+public class VoiceListener extends ListenerAdapter {
 
     Rethink rethink;
 
-    public Voicelistener(Rethink rethink) {
+    public VoiceListener(Rethink rethink) {
         this.rethink = rethink;
     }
 

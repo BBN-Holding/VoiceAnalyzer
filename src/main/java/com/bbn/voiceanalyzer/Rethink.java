@@ -12,9 +12,9 @@ import java.util.LinkedHashMap;
 
 public class Rethink {
 
-    private RethinkDB r = RethinkDB.r;
+    private final RethinkDB r = RethinkDB.r;
     private Connection conn;
-    private JSONObject config;
+    private final JSONObject config;
 
     public Rethink(JSONObject config) {
         this.config = config;
@@ -138,6 +138,4 @@ public class Rethink {
             setToMember(key, value, member);
         }
     }
-
-
 }

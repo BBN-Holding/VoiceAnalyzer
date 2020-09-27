@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class Main {
+public class VoiceAnalyzer {
 
     public static void main(String[] args) {
         File configfile = new File("config.json");
@@ -34,7 +34,7 @@ public class Main {
         rethink.connect();
         try {
             JDA jda = JDABuilder.createDefault(jsonObject.getString("BOT_TOKEN"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
-                    .addEventListeners(new Voicelistener(rethink), new CommandListener(rethink)).build();
+                    .addEventListeners(new VoiceListener(rethink), new CommandListener(rethink)).build();
         } catch (LoginException e) {
             e.printStackTrace();
         }

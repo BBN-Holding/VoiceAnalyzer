@@ -21,7 +21,7 @@ public class CommandListener extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if (event.getMessage().getContentRaw().equals("-statstop")) {
             HashMap<JSONObject, Long> times = new HashMap<>();
-            event.getGuild().retrieveMembers();
+            event.getGuild().loadMembers();
             for (JSONObject jsonObject : rethink.getAll(event.getGuild().getIdLong())) {
                 Date lastlefttime = new Date();
 
@@ -96,5 +96,4 @@ public class CommandListener extends ListenerAdapter {
                             .build()).queue();
         }
     }
-
 }
