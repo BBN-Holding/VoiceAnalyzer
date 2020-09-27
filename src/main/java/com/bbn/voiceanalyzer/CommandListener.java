@@ -56,9 +56,7 @@ public class CommandListener extends ListenerAdapter {
                 long elapsedDays = elapsedHours / 24;
 
                 event.getJDA().retrieveUserById(json.getString("memberid")).queue(
-                        user -> {
-                            sb.append(user.getAsTag()).append(" - ").append(String.format("%02d Days %02d:%02d:%02d", elapsedDays, hoursDisplay, minutesDisplay, secondsDisplay)).append("\n");
-                        }
+                        user -> sb.append(user.getAsTag()).append(" - ").append(String.format("%02d Days %02d:%02d:%02d", elapsedDays, hoursDisplay, minutesDisplay, secondsDisplay)).append("\n")
                 );
             }
             event.getChannel().sendMessage(new EmbedBuilder()

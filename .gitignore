@@ -28,4 +28,4 @@ config.json
 
 VoiceAnalyzer.iml
 
-src/META-INF/MANIFEST.MF
+target/
