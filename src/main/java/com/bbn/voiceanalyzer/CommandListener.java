@@ -2,6 +2,7 @@ package com.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.json.JSONObject;
@@ -16,6 +17,15 @@ public class CommandListener extends ListenerAdapter {
 
     public CommandListener(Rethink rethink) {
         this.rethink = rethink;
+    }
+
+    public String getTime(Long ms) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTimeInMillis(ms);
+        String str = String.format("%02d Days %02d:%02d:%02d",
+                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+        return str;
     }
 
     @Override
@@ -38,39 +48,32 @@ public class CommandListener extends ListenerAdapter {
                             long elapsedTime = Long.parseLong(connected) + connectednew;
 
                             times.put(jsonObject, elapsedTime);
-
                         }
 
                         Set<Map.Entry<JSONObject, Long>> set = times.entrySet();
                         List<Map.Entry<JSONObject, Long>> list = new ArrayList<>(set);
-                        list.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
+                        list.sort((Map.Entry.comparingByValue()));
+                        Collections.reverse(list);
+
                         ArrayList<String> strings = new ArrayList<>();
                         for (Map.Entry<JSONObject, Long> entry : list) {
-                            if (list.indexOf(entry)>10) break;
+                            if (list.indexOf(entry) > 10) break;
                             JSONObject json = entry.getKey();
 
-                            long elapsedSeconds = entry.getValue() / 1000;
-                            long secondsDisplay = elapsedSeconds % 60;
-                            long elapsedMinutes = elapsedSeconds / 60;
-                            long minutesDisplay = elapsedMinutes % 60;
-                            long elapsedHours = elapsedMinutes / 60;
-                            long hoursDisplay = elapsedHours % 24;
-                            long elapsedDays = elapsedHours / 24;
+                            User user = event.getJDA().getUserById(json.getString("memberid"));
+                            if (user == null) {
+                                user = event.getJDA().retrieveUserById(json.getString("memberid")).complete();
+                            }
 
-                            event.getJDA().retrieveUserById(json.getString("memberid")).queue(
-                                    user -> {
-                                        strings.add(user.getAsTag() + " - " + String.format("%02d Days %02d:%02d:%02d", elapsedDays, hoursDisplay, minutesDisplay, secondsDisplay));
-                                        if (strings.size()==list.size() || list.size()>10 && strings.size()==10) {
-                                            event.getChannel().sendMessage(new EmbedBuilder()
-                                                    .setTitle("Voice Toplist")
-                                                    .setDescription(String.join("\n", strings.toArray(String[]::new)))
-                                                    .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
-                                                    .setTimestamp(Instant.now())
-                                                    .build()).queue();
-                                        }
-                                    }
-                            );
+                            strings.add(list.indexOf(entry), user.getAsTag() + " - " + getTime(entry.getValue()));
                         }
+
+                        event.getChannel().sendMessage(new EmbedBuilder()
+                                .setTitle("Voice Toplist")
+                                .setDescription(String.join("\n", strings.toArray(String[]::new)))
+                                .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
+                                .setTimestamp(Instant.now())
+                                .build()).queue();
                     }
             );
 
@@ -90,21 +93,14 @@ public class CommandListener extends ListenerAdapter {
             }
 
             JSONObject jsonObject = rethink.get(member);
-            long elapsedTime = Long.parseLong(connected) + connectednew;
-            long elapsedSeconds = elapsedTime / 1000;
-            long secondsDisplay = elapsedSeconds % 60;
-            long elapsedMinutes = elapsedSeconds / 60;
-            long minutesDisplay = elapsedMinutes % 60;
-            long elapsedHours = elapsedMinutes / 60;
-            long hoursDisplay = elapsedHours % 24;
-            long elapsedDays = elapsedHours / 24;
 
             event.getChannel().sendMessage(
                     new EmbedBuilder()
                             .setTitle("Voicestats")
-                            .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(), member.getUser().getEffectiveAvatarUrl())
+                            .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(),
+                                    member.getUser().getEffectiveAvatarUrl())
                             .addField("Connected Times", jsonObject.getString("connectedTimes"), true)
-                            .addField("Time Connected", String.format("%02d Days %02d:%02d:%02d", elapsedDays, hoursDisplay, minutesDisplay, secondsDisplay), true)
+                            .addField("Time Connected", getTime(Long.parseLong(connected) + connectednew), true)
                             .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
                             .setTimestamp(Instant.now())
                             .build()).queue();
