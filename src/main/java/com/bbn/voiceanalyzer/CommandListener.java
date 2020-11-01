@@ -23,7 +23,7 @@ public class CommandListener extends ListenerAdapter {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.setTimeInMillis(ms);
         String str = String.format("%02d Days %02d:%02d:%02d",
-                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.DAY_OF_MONTH) - 1, calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
         return str;
     }
@@ -92,6 +92,17 @@ public class CommandListener extends ListenerAdapter {
                 connectednew = lastlefttime.getTime() - lastconnectedtime;
             }
 
+            long lastmutedtime = Long.parseLong(rethink.getLastMutedTime(member));
+
+            String muted = rethink.getMuted(event.getMember());
+            long mutednew = 0;
+            if (event.getMember().getVoiceState() != null)
+                if (event.getMember().getVoiceState().isMuted()) {
+                    if (lastmutedtime != 0) {
+                        mutednew = new Date().getTime() - lastmutedtime;
+                    }
+                }
+
             JSONObject jsonObject = rethink.get(member);
 
             event.getChannel().sendMessage(
@@ -101,6 +112,7 @@ public class CommandListener extends ListenerAdapter {
                                     member.getUser().getEffectiveAvatarUrl())
                             .addField("Connected Times", jsonObject.getString("connectedTimes"), true)
                             .addField("Time Connected", getTime(Long.parseLong(connected) + connectednew), true)
+                            .addField("Time Muted", getTime(Long.parseLong(muted) + mutednew), true)
                             .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
                             .setTimestamp(Instant.now())
                             .build()).queue();

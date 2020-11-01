@@ -67,6 +67,8 @@ public class Rethink {
                             .with("lastConnectedTime", "0")
                             .with("connected", "0")
                             .with("connectedTimes", "0")
+                            .with("lastMutedTime", "0")
+                            .with("muted", "0")
             ).run(conn);
     }
 
@@ -78,6 +80,7 @@ public class Rethink {
         return get(member).getString("connected");
     }
 
+
     public void setConnectedTimes(Member member, String connectedTimes) {
         setToMember("connectedTimes", connectedTimes, member);
     }
@@ -86,6 +89,7 @@ public class Rethink {
         return get(member).getString("connectedTimes");
     }
 
+
     public void setLastConnectedTime(Member member, String connectedTime) {
         setToMember("lastConnectedTime", connectedTime, member);
     }
@@ -93,6 +97,27 @@ public class Rethink {
     public String getLastConnectedTime(Member member) {
         return get(member).getString("lastConnectedTime");
     }
+
+
+    public String getLastMutedTime(Member member) {
+        return get(member).getString("lastMutedTime");
+    }
+
+    public void setLastMutedTime(Member member, String lastMutedTime) {
+        setToMember("lastMutedTime", lastMutedTime, member);
+    }
+
+
+    public void setMuted(Member member, String muted) {
+        setToMember("muted", muted, member);
+    }
+
+    public String getMuted(Member member) {
+        JSONObject json = get(member);
+        if (!json.has("muted")) setMuted(member, "0");
+        return get(member).getString("muted");
+    }
+
 
     public JSONObject get(Member member) {
         Result result = r.table("member").run(conn);

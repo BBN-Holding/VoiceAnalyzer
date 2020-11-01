@@ -15,26 +15,39 @@ public class VoiceListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
-        if (event instanceof GuildVoiceJoinEvent) {
-            rethink.setLastConnectedTime(((GuildVoiceJoinEvent) event).getMember(), String.valueOf(System.currentTimeMillis()));
-            rethink.setConnectedTimes(((GuildVoiceJoinEvent) event).getMember(), String.valueOf(Long.parseLong(
-                    rethink.getConnectedTimes(((GuildVoiceJoinEvent) event).getMember()))+1));
-        } else if (event instanceof GuildVoiceLeaveEvent) {
+    public void onGenericGuildVoice(@Nonnull GenericGuildVoiceEvent tmpevent) {
+        if (tmpevent instanceof GuildVoiceJoinEvent) {
+            GuildVoiceJoinEvent event = ((GuildVoiceJoinEvent) tmpevent);
+            rethink.setLastConnectedTime(event.getMember(), String.valueOf(System.currentTimeMillis()));
+            rethink.setConnectedTimes(event.getMember(), String.valueOf(Long.parseLong(
+                    rethink.getConnectedTimes(event.getMember())) + 1));
+        } else if (tmpevent instanceof GuildVoiceLeaveEvent) {
+            GuildVoiceLeaveEvent event = (GuildVoiceLeaveEvent) tmpevent;
             Date lastlefttime = new Date();
-            long lastconnectedtime = Long.parseLong(rethink.getLastConnectedTime(((GuildVoiceLeaveEvent) event).getMember()));
+            long lastconnectedtime = Long.parseLong(rethink.getLastConnectedTime(event.getMember()));
 
-            if (lastconnectedtime==0) return;
+            if (lastconnectedtime == 0) return;
 
-            String connected = rethink.getConnected(((GuildVoiceLeaveEvent) event).getMember());
+            String connected = rethink.getConnected(event.getMember());
             long connectednew = lastlefttime.getTime() - lastconnectedtime;
 
-            rethink.setConnected(((GuildVoiceLeaveEvent) event).getMember(), String.valueOf(Long.parseLong(connected)+connectednew));
-            rethink.setLastConnectedTime(((GuildVoiceLeaveEvent) event).getMember(), String.valueOf(0));
-        } else if (event instanceof GuildVoiceMuteEvent) {
+            rethink.setConnected(event.getMember(), String.valueOf(Long.parseLong(connected) + connectednew));
+            rethink.setLastConnectedTime(event.getMember(), String.valueOf(0));
+        } else if (tmpevent instanceof GuildVoiceMuteEvent) {
+            GuildVoiceMuteEvent event = ((GuildVoiceMuteEvent) tmpevent);
+            if (event.isMuted()) {
+                rethink.setLastMutedTime(event.getMember(), String.valueOf(System.currentTimeMillis()));
+            } else {
+                String muted = rethink.getMuted(event.getMember());
+                long lastmutedtime = Long.parseLong(rethink.getLastMutedTime(event.getMember()));
 
-        } else if (event instanceof GuildVoiceDeafenEvent) {
+                if (lastmutedtime == 0) return;
 
+                long mutednew = new Date().getTime() - lastmutedtime;
+
+                rethink.setMuted(event.getMember(), String.valueOf(Long.parseLong(muted) + mutednew));
+                rethink.setLastMutedTime(event.getMember(), String.valueOf(0));
+            }
         }
     }
 }
