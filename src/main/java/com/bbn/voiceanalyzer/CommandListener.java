@@ -65,7 +65,7 @@ public class CommandListener extends ListenerAdapter {
                                 user = event.getJDA().retrieveUserById(json.getString("memberid")).complete();
                             }
 
-                            strings.add(list.indexOf(entry), user.getAsTag() + " - " + getTime(entry.getValue()));
+                            strings.add(list.indexOf(entry), list.indexOf(entry)+". "+user.getAsTag() + " - " + getTime(entry.getValue()));
                         }
 
                         event.getChannel().sendMessage(new EmbedBuilder()
