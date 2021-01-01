@@ -78,7 +78,7 @@ public class CommandListener extends ListenerAdapter {
                         Member member = event.getGuild().getMemberById(entry.getValue());
                         JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
                         data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                        sb.append(list.indexOf(entry)).append(1).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        sb.append((list.indexOf(entry)+1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
                     }
                 }
 
