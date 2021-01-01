@@ -7,20 +7,20 @@ import java.lang.reflect.Field;
 
 public class Conversation {
 
-    private String userid;
-    private String guildid;
-    private String voicechannel;
-    private String starttime;
-    private String endtime;
-    private String[] mutetimes;
-    private String[] deaftimes;
-    private String[] idletimes;
+    private String userID;
+    private String guildID;
+    private String voiceChannel;
+    private String startTime;
+    private String endTime;
+    private String[] muteTimes;
+    private String[] deafTimes;
+    private String[] idleTimes;
 
-    public Conversation(String userid, String guildid, String voicechannel, String starttime) {
-        this.userid = userid;
-        this.guildid = guildid;
-        this.voicechannel = voicechannel;
-        this.starttime = starttime;
+    public Conversation(String userid, String guildID, String voiceChannel, String startTime) {
+        this.userID = userid;
+        this.guildID = guildID;
+        this.voiceChannel = voiceChannel;
+        this.startTime = startTime;
     }
 
     public Conversation(JSONObject jsonObject) {
@@ -51,51 +51,51 @@ public class Conversation {
         return jsonObject;
     }
 
-    public String getUserid() {
-        return userid;
+    public String getUserID() {
+        return userID;
     }
 
-    public String getGuildid() {
-        return guildid;
+    public String getGuildID() {
+        return guildID;
     }
 
-    public String getVoicechannel() {
-        return voicechannel;
+    public String getVoiceChannel() {
+        return voiceChannel;
     }
 
-    public String getStarttime() {
-        return starttime;
+    public String getStartTime() {
+        return startTime;
     }
 
-    public String getEndtime() {
-        return endtime == null ? String.valueOf(System.currentTimeMillis()) : endtime;
+    public String getEndTime() {
+        return endTime == null ? String.valueOf(System.currentTimeMillis()) : endTime;
     }
 
-    public void setEndtime(String endtime) {
-        this.endtime = endtime;
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
-    public String[] getMutetimes() {
-        return mutetimes;
+    public String[] getMuteTimes() {
+        return muteTimes;
     }
 
-    public void setMutetimes(String[] mutetimes) {
-        this.mutetimes = mutetimes;
+    public void setMuteTimes(String[] muteTimes) {
+        this.muteTimes = muteTimes;
     }
 
-    public String[] getDeaftimes() {
-        return deaftimes;
+    public String[] getDeafTimes() {
+        return deafTimes;
     }
 
-    public void setDeaftimes(String[] deaftimes) {
-        this.deaftimes = deaftimes;
+    public void setDeafTimes(String[] deafTimes) {
+        this.deafTimes = deafTimes;
     }
 
-    public String[] getIdletimes() {
-        return idletimes;
+    public String[] getIdleTimes() {
+        return idleTimes;
     }
 
-    public void setIdletimes(String[] idletimes) {
-        this.idletimes = idletimes;
+    public void setIdleTimes(String[] idleTimes) {
+        this.idleTimes = idleTimes;
     }
 }

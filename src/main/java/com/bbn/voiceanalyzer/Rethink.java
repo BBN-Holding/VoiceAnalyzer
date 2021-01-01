@@ -4,7 +4,8 @@ import com.rethinkdb.RethinkDB;
 import com.rethinkdb.gen.ast.ReqlExpr;
 import com.rethinkdb.gen.exc.ReqlOpFailedError;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.net.Cursor;
+
+import com.rethinkdb.net.Result;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -37,12 +38,12 @@ public class Rethink {
     }
 
     public JSONObject getMember(String userid, String guildid) {
-        Cursor cursor = r.table("members").filter(row -> row.getField("userid").eq(userid)).map(ReqlExpr::toJson).run(conn);
-        if (!cursor.hasNext()) {
+        Result result = r.table("members").filter(row -> row.getField("userid").eq(userid)).map(ReqlExpr::toJson).run(conn);
+        if (!result.hasNext()) {
             createMember(userid, guildid);
             return getMember(userid, guildid);
         } else {
-            for (Object doc : cursor) {
+            for (Object doc : result) {
                 return new JSONObject(String.valueOf(doc));
             }
         }
@@ -78,14 +79,14 @@ public class Rethink {
 
     public void stopConversation(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-        if (conversation.getDeaftimes() != null && conversation.getDeaftimes().length > 0 && conversation.getDeaftimes()[conversation.getDeaftimes().length - 1].endsWith("-"))
+        if (conversation.getDeafTimes() != null && conversation.getDeafTimes().length > 0 && conversation.getDeafTimes()[conversation.getDeafTimes().length - 1].endsWith("-"))
             setUndeafed(userid, guildid, timestamp);
-        if (conversation.getMutetimes() != null && conversation.getMutetimes().length > 0 && conversation.getMutetimes()[conversation.getMutetimes().length - 1].endsWith("-"))
+        if (conversation.getMuteTimes() != null && conversation.getMuteTimes().length > 0 && conversation.getMuteTimes()[conversation.getMuteTimes().length - 1].endsWith("-"))
             setUnmuted(userid, guildid, timestamp);
-        if (conversation.getIdletimes() != null && conversation.getIdletimes().length > 0 && conversation.getIdletimes()[conversation.getIdletimes().length - 1].endsWith("-"))
+        if (conversation.getIdleTimes() != null && conversation.getIdleTimes().length > 0 && conversation.getIdleTimes()[conversation.getIdleTimes().length - 1].endsWith("-"))
             setOnline(userid, guildid, timestamp);
         conversation = new Conversation(getLastConversation(userid, guildid));
-        conversation.setEndtime(timestamp);
+        conversation.setEndTime(timestamp);
         setLastConversation(userid, guildid, conversation);
     }
 
@@ -93,21 +94,21 @@ public class Rethink {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
 
         String[] mutes;
-        if (conversation.getMutetimes() != null) {
-            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getMutetimes()));
+        if (conversation.getMuteTimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getMuteTimes()));
             list.add(timestamp + "-");
             mutes = list.toArray(String[]::new);
         } else
             mutes = Arrays.asList(timestamp + "-").toArray(String[]::new);
 
-        conversation.setMutetimes(mutes);
+        conversation.setMuteTimes(mutes);
         setLastConversation(userid, guildid, conversation);
     }
 
     public void setUnmuted(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-        if (conversation.getMutetimes() != null) {
-            conversation.getMutetimes()[conversation.getMutetimes().length - 1] = conversation.getMutetimes()[conversation.getMutetimes().length - 1] + timestamp;
+        if (conversation.getMuteTimes() != null) {
+            conversation.getMuteTimes()[conversation.getMuteTimes().length - 1] = conversation.getMuteTimes()[conversation.getMuteTimes().length - 1] + timestamp;
             setLastConversation(userid, guildid, conversation);
         }
     }
@@ -116,21 +117,21 @@ public class Rethink {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
 
         String[] deafes;
-        if (conversation.getDeaftimes() != null) {
-            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getDeaftimes()));
+        if (conversation.getDeafTimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getDeafTimes()));
             list.add(timestamp + "-");
             deafes = list.toArray(String[]::new);
         } else
             deafes = Arrays.asList(timestamp + "-").toArray(String[]::new);
 
-        conversation.setDeaftimes(deafes);
+        conversation.setDeafTimes(deafes);
         setLastConversation(userid, guildid, conversation);
     }
 
     public void setUndeafed(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-        if (conversation.getDeaftimes() != null) {
-            conversation.getDeaftimes()[conversation.getDeaftimes().length - 1] = conversation.getDeaftimes()[conversation.getDeaftimes().length - 1] + timestamp;
+        if (conversation.getDeafTimes() != null) {
+            conversation.getDeafTimes()[conversation.getDeafTimes().length - 1] = conversation.getDeafTimes()[conversation.getDeafTimes().length - 1] + timestamp;
             setLastConversation(userid, guildid, conversation);
         }
     }
@@ -139,21 +140,21 @@ public class Rethink {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
 
         String[] afk;
-        if (conversation.getIdletimes() != null) {
-            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getIdletimes()));
+        if (conversation.getIdleTimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getIdleTimes()));
             list.add(timestamp + "-");
             afk = list.toArray(String[]::new);
         } else
             afk = Arrays.asList(timestamp + "-").toArray(String[]::new);
 
-        conversation.setIdletimes(afk);
+        conversation.setIdleTimes(afk);
         setLastConversation(userid, guildid, conversation);
     }
 
     public void setOnline(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-        if (conversation.getIdletimes() != null) {
-            conversation.getIdletimes()[conversation.getIdletimes().length - 1] = conversation.getIdletimes()[conversation.getIdletimes().length - 1] + timestamp;
+        if (conversation.getIdleTimes() != null) {
+            conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] = conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] + timestamp;
             setLastConversation(userid, guildid, conversation);
         }
     }

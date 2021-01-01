@@ -26,7 +26,7 @@ public class PlotCreator {
         ArrayList<Double> doubles = new ArrayList<>();
         for (Object conversationobj : conversations) {
             Conversation conversation = new Conversation((JSONObject) conversationobj);
-            doubles.add((double) (Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime())) / 1000 / 60 / 60);
+            doubles.add((double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime())) / 1000 / 60 / 60);
         }
         chart.addSeries("Conversation", doubles.stream().mapToDouble(d -> d).toArray());
 
@@ -57,9 +57,9 @@ public class PlotCreator {
             long sum = 0;
             for (Object conversationobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationobj);
-                long start = Long.parseLong(conversation.getStarttime());
+                long start = Long.parseLong(conversation.getStartTime());
                 if (start < loweststarttime || loweststarttime == 0) loweststarttime = start;
-                long end = Long.parseLong(conversation.getEndtime());
+                long end = Long.parseLong(conversation.getEndTime());
                 if (higheststarttime < end) higheststarttime = end;
                 sum += end - start;
             }
@@ -75,11 +75,11 @@ public class PlotCreator {
             long sum = 0;
             for (Object conversationsobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationsobj);
-                long starttime = Long.parseLong(conversation.getStarttime()) - loweststarttime;
+                long starttime = Long.parseLong(conversation.getStartTime()) - loweststarttime;
                 double timepercent = ((double) starttime / (double) totaltime) * 100;
                 starttimes.add(timepercent);
 
-                long talktime = Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime());
+                long talktime = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
                 sum+=talktime;
                 double sumpercent = ((double) sum / (double) highestsum) * 100;
                 sums.add(sumpercent);

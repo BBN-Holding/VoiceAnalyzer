@@ -25,14 +25,13 @@ public class CommandListener extends ListenerAdapter {
     public String getTime(Long ms) {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.setTimeInMillis(ms);
-        String str = String.format("%02d Days %02d:%02d:%02d",
+        return String.format("%02d Days %02d:%02d:%02d",
                 calendar.get(Calendar.DAY_OF_MONTH) - 1, calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
-        return str;
     }
 
-    public Long getSum(String[] data) {
-        Long sum = 0L;
+    public long getSum(String[] data) {
+        long sum = 0L;
         if (data != null) {
             for (String time : data) {
                 if (time.endsWith("-")) time += System.currentTimeMillis();
@@ -50,18 +49,18 @@ public class CommandListener extends ListenerAdapter {
                 JSONArray data = new JSONArray();
                 HashMap<Long, String> timetoid = new HashMap<>();
 
-                // Get all voicetimes
+                // Get all voice times
                 for (Member member : members) {
                     JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
                     if (!memberjson.getString("conversations").equals("[]")) {
                         JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
-                        Long time = 0L;
+                        long time = 0L;
                         for (Object conversationobj : conversations) {
                             Conversation conversation = new Conversation((JSONObject) conversationobj);
-                            time += (Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime()));
-                            time -= getSum(conversation.getMutetimes());
-                            time -= getSum(conversation.getIdletimes());
-                            time -= getSum(conversation.getDeaftimes());
+                            time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                            time -= getSum(conversation.getMuteTimes());
+                            time -= getSum(conversation.getIdleTimes());
+                            time -= getSum(conversation.getDeafTimes());
                         }
                         timetoid.put(time, member.getId());
                     }
@@ -79,7 +78,7 @@ public class CommandListener extends ListenerAdapter {
                         Member member = event.getGuild().getMemberById(entry.getValue());
                         JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
                         data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                        sb.append(list.indexOf(entry) + 1 + ". " + member.getUser().getAsTag() + " - " + getTime(entry.getKey()) + "\n");
+                        sb.append(list.indexOf(entry)).append(1).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
                     }
                 }
 
@@ -115,10 +114,10 @@ public class CommandListener extends ListenerAdapter {
             long idle = 0;
             for (Object conversationobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationobj);
-                connected += (double) (Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime()));
-                muted += getSum(conversation.getMutetimes());
-                deafed += getSum(conversation.getDeaftimes());
-                idle += getSum(conversation.getIdletimes());
+                connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                muted += getSum(conversation.getMuteTimes());
+                deafed += getSum(conversation.getDeafTimes());
+                idle += getSum(conversation.getIdleTimes());
             }
 
             // Draw Plot, Save it
@@ -138,7 +137,7 @@ public class CommandListener extends ListenerAdapter {
                                     .addField("Conversations", String.valueOf(conversations.length()), true)
                                     .addField("Time", getTime(finalConnected), true)
                                     .addField("Muted", getTime(finalMuted), true)
-                                    .addField("Deafed", getTime(finalDeafed), true)
+                                    .addField("Deafened", getTime(finalDeafed), true)
                                     .addField("Idle", getTime(finalIdle), true)
                                     .setImage(msg.getAttachments().get(0).getUrl())
                                     .setTimestamp(Instant.now())
