@@ -2,21 +2,24 @@ package com.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.annotation.Nonnull;
+import java.io.File;
 import java.time.Instant;
 import java.util.*;
 
 public class CommandListener extends ListenerAdapter {
 
     Rethink rethink;
+    JSONObject config;
 
-    public CommandListener(Rethink rethink) {
+    public CommandListener(Rethink rethink, JSONObject config) {
         this.rethink = rethink;
+        this.config = config;
     }
 
     public String getTime(Long ms) {
@@ -28,94 +31,120 @@ public class CommandListener extends ListenerAdapter {
         return str;
     }
 
+    public Long getSum(String[] data) {
+        Long sum = 0L;
+        if (data != null) {
+            for (String time : data) {
+                if (time.endsWith("-")) time += System.currentTimeMillis();
+                String[] split = time.split("-");
+                sum += Long.parseLong(split[1]) - Long.parseLong(split[0]);
+            }
+        }
+        return sum;
+    }
+
     @Override
-    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (event.getMessage().getContentRaw().equals("-statstop")) {
-            HashMap<JSONObject, Long> times = new HashMap<>();
-            event.getGuild().loadMembers().onSuccess(
-                    members -> {
-                        for (JSONObject jsonObject : rethink.getAll(event.getGuild().getIdLong())) {
-                            Date lastlefttime = new Date();
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        if (event.getMessage().getContentRaw().equals("+statstop")) {
+            event.getGuild().loadMembers().onSuccess(members -> {
+                JSONArray data = new JSONArray();
+                HashMap<Long, String> timetoid = new HashMap<>();
 
-                            long lastconnectedtime = Long.parseLong(jsonObject.getString("lastConnectedTime"));
-
-                            String connected = jsonObject.getString("connected");
-                            long connectednew = 0;
-                            if (lastconnectedtime != 0) {
-                                connectednew = lastlefttime.getTime() - lastconnectedtime;
-                            }
-
-                            long elapsedTime = Long.parseLong(connected) + connectednew;
-
-                            times.put(jsonObject, elapsedTime);
+                // Get all voicetimes
+                for (Member member : members) {
+                    JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
+                    if (!memberjson.getString("conversations").equals("[]")) {
+                        JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
+                        Long time = 0L;
+                        for (Object conversationobj : conversations) {
+                            Conversation conversation = new Conversation((JSONObject) conversationobj);
+                            time += (Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime()));
+                            time -= getSum(conversation.getMutetimes());
+                            time -= getSum(conversation.getIdletimes());
+                            time -= getSum(conversation.getDeaftimes());
                         }
-
-                        Set<Map.Entry<JSONObject, Long>> set = times.entrySet();
-                        List<Map.Entry<JSONObject, Long>> list = new ArrayList<>(set);
-                        list.sort((Map.Entry.comparingByValue()));
-                        Collections.reverse(list);
-
-                        ArrayList<String> strings = new ArrayList<>();
-                        for (Map.Entry<JSONObject, Long> entry : list) {
-                            if (list.indexOf(entry) > 10) break;
-                            JSONObject json = entry.getKey();
-
-                            User user = event.getJDA().getUserById(json.getString("memberid"));
-                            if (user == null) {
-                                user = event.getJDA().retrieveUserById(json.getString("memberid")).complete();
-                            }
-
-                            strings.add(list.indexOf(entry), list.indexOf(entry)+". "+user.getAsTag() + " - " + getTime(entry.getValue()));
-                        }
-
-                        event.getChannel().sendMessage(new EmbedBuilder()
-                                .setTitle("Voice Toplist")
-                                .setDescription(String.join("\n", strings.toArray(String[]::new)))
-                                .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
-                                .setTimestamp(Instant.now())
-                                .build()).queue();
+                        timetoid.put(time, member.getId());
                     }
-            );
+                }
+                // Sort and reverse the list
+                Set<Map.Entry<Long, String>> set = timetoid.entrySet();
+                List<Map.Entry<Long, String>> list = new ArrayList<>(set);
+                list.sort((Map.Entry.comparingByKey()));
+                Collections.reverse(list);
 
-        } else if (event.getMessage().getContentRaw().startsWith("-stats")) {
+                // Build outputstring, Build data object
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<Long, String> entry : list) {
+                    if (list.indexOf(entry) < 10) {
+                        Member member = event.getGuild().getMemberById(entry.getValue());
+                        JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
+                        data.put(memberjson.put("Tag", member.getUser().getAsTag()));
+                        sb.append(list.indexOf(entry) + 1 + ". " + member.getUser().getAsTag() + " - " + getTime(entry.getKey()) + "\n");
+                    }
+                }
 
+                // Draw Plot, Save it
+                new PlotCreator().createStatstop(data);
+
+                // Send Plot from file in storagechannel, Send final message
+                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                        msg -> event.getTextChannel().sendMessage(
+                                new EmbedBuilder()
+                                        .setTitle("Statstop")
+                                        .setDescription(sb.toString())
+                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                        .setImage(msg.getAttachments().get(0).getUrl())
+                                        .setTimestamp(Instant.now())
+                                        .build()
+                        ).queue()
+                );
+            });
+        } else if (event.getMessage().getContentRaw().startsWith("+stats")) {
+            // Get Member
             Member member = event.getMember();
             if (event.getMessage().getMentionedMembers().size() == 1)
                 member = event.getMessage().getMentionedMembers().get(0);
 
-            Date lastlefttime = new Date();
-            long lastconnectedtime = Long.parseLong(rethink.getLastConnectedTime(member));
+            // Get Conversation Object
+            JSONArray conversations = new JSONArray(rethink.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
 
-            String connected = rethink.getConnected(member);
-            long connectednew = 0;
-            if (lastconnectedtime != 0) {
-                connectednew = lastlefttime.getTime() - lastconnectedtime;
+            // Get Field Values
+            long connected = 0;
+            long muted = 0;
+            long deafed = 0;
+            long idle = 0;
+            for (Object conversationobj : conversations) {
+                Conversation conversation = new Conversation((JSONObject) conversationobj);
+                connected += (double) (Long.parseLong(conversation.getEndtime()) - Long.parseLong(conversation.getStarttime()));
+                muted += getSum(conversation.getMutetimes());
+                deafed += getSum(conversation.getDeaftimes());
+                idle += getSum(conversation.getIdletimes());
             }
 
-            long lastmutedtime = Long.parseLong(rethink.getLastMutedTime(member));
+            // Draw Plot, Save it
+            new PlotCreator().createStat(conversations);
 
-            String muted = rethink.getMuted(event.getMember());
-            long mutednew = 0;
-            if (event.getMember().getVoiceState() != null)
-                if (event.getMember().getVoiceState().isMuted()) {
-                    if (lastmutedtime != 0) {
-                        mutednew = new Date().getTime() - lastmutedtime;
-                    }
-                }
-
-            JSONObject jsonObject = rethink.get(member);
-
-            event.getChannel().sendMessage(
-                    new EmbedBuilder()
-                            .setTitle("Voicestats")
-                            .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(),
-                                    member.getUser().getEffectiveAvatarUrl())
-                            .addField("Connected Times", jsonObject.getString("connectedTimes"), true)
-                            .addField("Time Connected", getTime(Long.parseLong(connected) + connectednew), true)
-                            .addField("Time Muted", getTime(Long.parseLong(muted) + mutednew), true)
-                            .setFooter("Provided by BBN", "https://bigbotnetwork.com/images/avatar.png")
-                            .setTimestamp(Instant.now())
-                            .build()).queue();
+            // Send Plot from file in storagechannel, Send final message
+            Member finalMember = member;
+            long finalConnected = connected;
+            long finalMuted = muted;
+            long finalIdle = idle;
+            long finalDeafed = deafed;
+            event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                    msg -> event.getTextChannel().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Stats")
+                                    .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
+                                    .addField("Conversations", String.valueOf(conversations.length()), true)
+                                    .addField("Time", getTime(finalConnected), true)
+                                    .addField("Muted", getTime(finalMuted), true)
+                                    .addField("Deafed", getTime(finalDeafed), true)
+                                    .addField("Idle", getTime(finalIdle), true)
+                                    .setImage(msg.getAttachments().get(0).getUrl())
+                                    .setTimestamp(Instant.now())
+                                    .build()
+                    ).queue()
+            );
         }
     }
 }

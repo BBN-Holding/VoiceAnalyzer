@@ -1,166 +1,160 @@
 package com.bbn.voiceanalyzer;
 
 import com.rethinkdb.RethinkDB;
+import com.rethinkdb.gen.ast.ReqlExpr;
 import com.rethinkdb.gen.exc.ReqlOpFailedError;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.net.Result;
-import net.dv8tion.jda.api.entities.Member;
+import com.rethinkdb.net.Cursor;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 
 public class Rethink {
 
-    private final RethinkDB r = RethinkDB.r;
-    private Connection conn;
-    private final JSONObject config;
+    public static final RethinkDB r = RethinkDB.r;
 
-    public Rethink(JSONObject config) {
-        this.config = config;
-    }
+    Connection conn;
+
 
     public void connect() {
-        try {
-            conn = r.connection()
-                    .hostname(config.getString("DB_IP"))
-                    .db(config.getString("DB_NAME"))
-                    .port(config.getInt("DB_PORT"))
-                    .user(config.getString("DB_USER"), config.getString("DB_PASSWORD"))
-                    .connect();
-            System.out.println("DB CONNECTED");
-            this.createTables();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("DB CONNECTION FAILED");
-        }
+        conn = r.connection().db("VCA").hostname("localhost").port(28015).connect();
+        createTables();
     }
 
     public void createTables() {
         try {
-            r.dbCreate(config.getString("DB_NAME")).run(conn);
-        } catch (ReqlOpFailedError e) {
-            System.out.println(e.getMessage());
-        }
-        try {
-            r.tableCreate("member").run(conn);
-        } catch (ReqlOpFailedError e) {
-            System.out.println(e.getMessage());
+            r.dbCreate("VCA").run(conn);
+            r.tableCreate("members").run(conn);
+        } catch (ReqlOpFailedError error) {
+            System.out.println(error.getMessage());
         }
     }
 
-    public void createMember(Member member) {
-        Result result = r.table("member").getAll(member.getUser().getId()).run(conn);
-        boolean contained = false;
-        while (result.hasNext()) {
-            JSONObject jsonObject = new JSONObject((LinkedHashMap) result.next());
-            if (jsonObject.getString("guildid").equals(member.getGuild().getId())) {
-                if (jsonObject.getString("memberid").equals(member.getUser().getId())) {
-                    contained = true;
-                }
-            }
-        }
-        if (!contained)
-            r.table("member").insert(
-                    r.hashMap("memberid", member.getUser().getId())
-                            .with("guildid", member.getGuild().getId())
-                            .with("lastConnectedTime", "0")
-                            .with("connected", "0")
-                            .with("connectedTimes", "0")
-                            .with("lastMutedTime", "0")
-                            .with("muted", "0")
-            ).run(conn);
+    public void createMember(String userid, String guildid) {
+        r.table("members").insert(r.hashMap("userid", userid).with("guildid", guildid).with("conversations", "[]")).run(conn);
     }
 
-    public void setConnected(Member member, String connected) {
-        setToMember("connected", connected, member);
-    }
-
-    public String getConnected(Member member) {
-        return get(member).getString("connected");
-    }
-
-
-    public void setConnectedTimes(Member member, String connectedTimes) {
-        setToMember("connectedTimes", connectedTimes, member);
-    }
-
-    public String getConnectedTimes(Member member) {
-        return get(member).getString("connectedTimes");
-    }
-
-
-    public void setLastConnectedTime(Member member, String connectedTime) {
-        setToMember("lastConnectedTime", connectedTime, member);
-    }
-
-    public String getLastConnectedTime(Member member) {
-        return get(member).getString("lastConnectedTime");
-    }
-
-
-    public String getLastMutedTime(Member member) {
-        return get(member).getString("lastMutedTime");
-    }
-
-    public void setLastMutedTime(Member member, String lastMutedTime) {
-        setToMember("lastMutedTime", lastMutedTime, member);
-    }
-
-
-    public void setMuted(Member member, String muted) {
-        setToMember("muted", muted, member);
-    }
-
-    public String getMuted(Member member) {
-        JSONObject json = get(member);
-        if (!json.has("muted")) setMuted(member, "0");
-        return get(member).getString("muted");
-    }
-
-
-    public JSONObject get(Member member) {
-        Result result = r.table("member").run(conn);
-        while (result.hasNext()) {
-            JSONObject jsonObject = new JSONObject((LinkedHashMap) result.next());
-            if (jsonObject.getString("guildid").equals(member.getGuild().getId())) {
-                if (jsonObject.getString("memberid").equals(member.getUser().getId())) {
-                    return jsonObject;
-                }
-            }
-        }
-        createMember(member);
-        return get(member);
-    }
-
-    public ArrayList<JSONObject> getAll(long guildid) {
-        Result result = r.table("member").run(conn);
-        ArrayList<JSONObject> all = new ArrayList<>();
-        while (result.hasNext()) {
-            JSONObject jsonObject = new JSONObject((LinkedHashMap) result.next());
-            if (jsonObject.getString("guildid").equals(String.valueOf(guildid))) {
-                all.add(jsonObject);
-            }
-        }
-        return all;
-    }
-
-    public void setToMember(String key, String value, Member member) {
-        Result result = r.table("member").run(conn);
-        String id = "";
-        while (result.hasNext()) {
-            JSONObject jsonObject = new JSONObject((LinkedHashMap) result.next());
-            if (jsonObject.getString("guildid").equals(member.getGuild().getId())) {
-                if (jsonObject.getString("memberid").equals(member.getUser().getId())) {
-                    id = jsonObject.getString("id");
-                }
-            }
-        }
-        if (!id.equals("")) {
-            r.table("member").get(id).update(r.hashMap(key, value)).run(conn);
+    public JSONObject getMember(String userid, String guildid) {
+        Cursor cursor = r.table("members").filter(row -> row.getField("userid").eq(userid)).map(ReqlExpr::toJson).run(conn);
+        if (!cursor.hasNext()) {
+            createMember(userid, guildid);
+            return getMember(userid, guildid);
         } else {
-            createMember(member);
-            setToMember(key, value, member);
+            for (Object doc : cursor) {
+                return new JSONObject(String.valueOf(doc));
+            }
+        }
+        return null;
+    }
+
+    public JSONObject getLastConversation(String userid, String guildid) {
+        JSONArray arr = new JSONArray(getMember(userid, guildid).getString("conversations"));
+        return arr.getJSONObject(arr.length() - 1);
+    }
+
+    public void startConversation(String userid, String guildid, String channel, String starttime) {
+        JSONObject jsonObject = getMember(userid, guildid);
+        JSONObject conversation = new Conversation(userid, guildid, channel, starttime).toJson();
+        jsonObject.put("conversations", new JSONArray(jsonObject.getString("conversations")).put(conversation).toString());
+        r.table("members")
+                .get(jsonObject.getString("id"))
+                .update(r.hashMap("conversations", jsonObject.getString("conversations")))
+                .optArg("non_atomic", true).run(conn);
+    }
+
+    public void setLastConversation(String userid, String guildid, Conversation conversation) {
+        JSONObject jsonObject = getMember(userid, guildid);
+        JSONArray arr = new JSONArray(jsonObject.getString("conversations"));
+        arr.remove(arr.length() - 1);
+        arr.put(conversation.toJson());
+        jsonObject.put("conversations", arr.toString());
+        r.table("members")
+                .get(jsonObject.getString("id"))
+                .update(r.hashMap("conversations", jsonObject.getString("conversations")))
+                .optArg("non_atomic", true).run(conn);
+    }
+
+    public void stopConversation(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        if (conversation.getDeaftimes() != null && conversation.getDeaftimes().length > 0 && conversation.getDeaftimes()[conversation.getDeaftimes().length - 1].endsWith("-"))
+            setUndeafed(userid, guildid, timestamp);
+        if (conversation.getMutetimes() != null && conversation.getMutetimes().length > 0 && conversation.getMutetimes()[conversation.getMutetimes().length - 1].endsWith("-"))
+            setUnmuted(userid, guildid, timestamp);
+        if (conversation.getIdletimes() != null && conversation.getIdletimes().length > 0 && conversation.getIdletimes()[conversation.getIdletimes().length - 1].endsWith("-"))
+            setOnline(userid, guildid, timestamp);
+        conversation = new Conversation(getLastConversation(userid, guildid));
+        conversation.setEndtime(timestamp);
+        setLastConversation(userid, guildid, conversation);
+    }
+
+    public void setMuted(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+
+        String[] mutes;
+        if (conversation.getMutetimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getMutetimes()));
+            list.add(timestamp + "-");
+            mutes = list.toArray(String[]::new);
+        } else
+            mutes = Arrays.asList(timestamp + "-").toArray(String[]::new);
+
+        conversation.setMutetimes(mutes);
+        setLastConversation(userid, guildid, conversation);
+    }
+
+    public void setUnmuted(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        if (conversation.getMutetimes() != null) {
+            conversation.getMutetimes()[conversation.getMutetimes().length - 1] = conversation.getMutetimes()[conversation.getMutetimes().length - 1] + timestamp;
+            setLastConversation(userid, guildid, conversation);
+        }
+    }
+
+    public void setDeafed(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+
+        String[] deafes;
+        if (conversation.getDeaftimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getDeaftimes()));
+            list.add(timestamp + "-");
+            deafes = list.toArray(String[]::new);
+        } else
+            deafes = Arrays.asList(timestamp + "-").toArray(String[]::new);
+
+        conversation.setDeaftimes(deafes);
+        setLastConversation(userid, guildid, conversation);
+    }
+
+    public void setUndeafed(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        if (conversation.getDeaftimes() != null) {
+            conversation.getDeaftimes()[conversation.getDeaftimes().length - 1] = conversation.getDeaftimes()[conversation.getDeaftimes().length - 1] + timestamp;
+            setLastConversation(userid, guildid, conversation);
+        }
+    }
+
+    public void setAfk(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+
+        String[] afk;
+        if (conversation.getIdletimes() != null) {
+            ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getIdletimes()));
+            list.add(timestamp + "-");
+            afk = list.toArray(String[]::new);
+        } else
+            afk = Arrays.asList(timestamp + "-").toArray(String[]::new);
+
+        conversation.setIdletimes(afk);
+        setLastConversation(userid, guildid, conversation);
+    }
+
+    public void setOnline(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        if (conversation.getIdletimes() != null) {
+            conversation.getIdletimes()[conversation.getIdletimes().length - 1] = conversation.getIdletimes()[conversation.getIdletimes().length - 1] + timestamp;
+            setLastConversation(userid, guildid, conversation);
         }
     }
 }
