@@ -14,7 +14,7 @@ public class PlotCreator {
 
     public void createStat(JSONArray conversations) {
         // Create Chart
-        final XYChart chart = new XYChartBuilder().width(1000).height(400).title("Hours Per Conversation").xAxisTitle("Conversations").yAxisTitle("Hours").build();
+        final XYChart chart = new XYChartBuilder().width(1000).height(400).title("Connected Time Per Conversation").xAxisTitle("Conversations").yAxisTitle("Hours").build();
 
         // Customize Chart
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Area);
@@ -78,6 +78,12 @@ public class PlotCreator {
                 long starttime = Long.parseLong(conversation.getStartTime()) - loweststarttime;
                 double timepercent = ((double) starttime / (double) totaltime) * 100;
                 starttimes.add(timepercent);
+
+                long endtime = Long.parseLong(conversation.getEndTime()) - loweststarttime;
+                double endtimepercent = ((double) endtime / (double) totaltime) * 100;
+                starttimes.add(endtimepercent);
+
+                sums.add(((double) sum / (double) highestsum) * 100);
 
                 long talktime = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
                 sum+=talktime;

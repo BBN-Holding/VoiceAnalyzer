@@ -4,7 +4,6 @@ import com.rethinkdb.RethinkDB;
 import com.rethinkdb.gen.ast.ReqlExpr;
 import com.rethinkdb.gen.exc.ReqlOpFailedError;
 import com.rethinkdb.net.Connection;
-
 import com.rethinkdb.net.Result;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -85,6 +84,8 @@ public class Rethink {
             setUnmuted(userid, guildid, timestamp);
         if (conversation.getIdleTimes() != null && conversation.getIdleTimes().length > 0 && conversation.getIdleTimes()[conversation.getIdleTimes().length - 1].endsWith("-"))
             setOnline(userid, guildid, timestamp);
+        if (conversation.getSleepTimes() != null && conversation.getSleepTimes().length > 0 && conversation.getSleepTimes()[conversation.getSleepTimes().length - 1].endsWith("-"))
+            setAwake(userid, guildid, timestamp);
         conversation = new Conversation(getLastConversation(userid, guildid));
         conversation.setEndTime(timestamp);
         setLastConversation(userid, guildid, conversation);
@@ -155,6 +156,29 @@ public class Rethink {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
         if (conversation.getIdleTimes() != null) {
             conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] = conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] + timestamp;
+            setLastConversation(userid, guildid, conversation);
+        }
+    }
+
+    public void setSleep(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+
+        String[] sleep;
+        if (conversation.getIdleTimes() != null) {
+            ArrayList<String> list = new ArrayList<>(Arrays.asList(conversation.getSleepTimes()));
+            list.add(timestamp + "-");
+            sleep = list.toArray(String[]::new);
+        } else {
+            sleep = Arrays.asList(timestamp + "-").toArray(String[]::new);
+        }
+        conversation.setSleepTimes(sleep);
+        setLastConversation(userid, guildid, conversation);
+    }
+
+    public void setAwake(String userid, String guildid, String timestamp) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        if (conversation.getSleepTimes() != null) {
+            conversation.getSleepTimes()[conversation.getSleepTimes().length-1] = conversation.getSleepTimes()[conversation.getSleepTimes().length-1] + timestamp;
             setLastConversation(userid, guildid, conversation);
         }
     }

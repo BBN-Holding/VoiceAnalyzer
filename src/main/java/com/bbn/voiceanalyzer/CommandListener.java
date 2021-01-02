@@ -61,6 +61,7 @@ public class CommandListener extends ListenerAdapter {
                             time -= getSum(conversation.getMuteTimes());
                             time -= getSum(conversation.getIdleTimes());
                             time -= getSum(conversation.getDeafTimes());
+                            time -= getSum(conversation.getSleepTimes());
                         }
                         timetoid.put(time, member.getId());
                     }
@@ -112,13 +113,17 @@ public class CommandListener extends ListenerAdapter {
             long muted = 0;
             long deafed = 0;
             long idle = 0;
+            long sleep = 0;
             for (Object conversationobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationobj);
                 connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
                 muted += getSum(conversation.getMuteTimes());
                 deafed += getSum(conversation.getDeafTimes());
                 idle += getSum(conversation.getIdleTimes());
+                sleep += getSum(conversation.getSleepTimes());
             }
+
+            long total = connected-muted-deafed-idle-sleep;
 
             // Draw Plot, Save it
             new PlotCreator().createStat(conversations);
@@ -129,6 +134,7 @@ public class CommandListener extends ListenerAdapter {
             long finalMuted = muted;
             long finalIdle = idle;
             long finalDeafed = deafed;
+            long finalSleep = sleep;
             event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
                     msg -> event.getTextChannel().sendMessage(
                             new EmbedBuilder()
@@ -139,6 +145,8 @@ public class CommandListener extends ListenerAdapter {
                                     .addField("Muted", getTime(finalMuted), true)
                                     .addField("Deafened", getTime(finalDeafed), true)
                                     .addField("Idle", getTime(finalIdle), true)
+                                    .addField("Sleep", getTime(finalSleep), true)
+                                    .addField("Total", getTime(total), true)
                                     .setImage(msg.getAttachments().get(0).getUrl())
                                     .setTimestamp(Instant.now())
                                     .build()

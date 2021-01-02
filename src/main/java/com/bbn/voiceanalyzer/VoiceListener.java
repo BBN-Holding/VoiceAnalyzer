@@ -1,6 +1,8 @@
 package com.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.events.channel.voice.update.VoiceChannelUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.voice.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent;
@@ -19,6 +21,22 @@ public class VoiceListener extends ListenerAdapter {
     public VoiceListener(Rethink rethink, JSONObject config) {
         this.rethink = rethink;
         this.config = config;
+    }
+
+    @Override
+    public void onVoiceChannelUpdateName(@NotNull VoiceChannelUpdateNameEvent event) {
+        if (!event.getOldName().endsWith(" - Sleep") && event.getNewName().endsWith(" - Sleep")) {
+            for (Member member : event.getChannel().getMembers()) {
+                rethink.setSleep(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set sleep for "+member.getUser().getAsTag()).queue();
+            }
+        }
+        if (event.getOldName().endsWith(" - Sleep") && !event.getNewName().endsWith(" - Sleep")) {
+            for (Member member : event.getChannel().getMembers()) {
+                rethink.setAwake(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set awake for "+member.getUser().getAsTag()).queue();
+            }
+        }
     }
 
     @Override
@@ -85,7 +103,6 @@ public class VoiceListener extends ListenerAdapter {
 
     @Override
     public void onUserUpdateOnlineStatus(@NotNull UserUpdateOnlineStatusEvent event) {
-        // TODO: DND not afk, solution?
         // Start/Stop afk on conversation => AFK Time
         if (event.getMember().getVoiceState() != null) {
             if (event.getMember().getVoiceState().inVoiceChannel()) {
