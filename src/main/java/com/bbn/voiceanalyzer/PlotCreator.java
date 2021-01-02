@@ -85,7 +85,12 @@ public class PlotCreator {
 
                 sums.add(((double) sum / (double) highestsum) * 100);
 
-                long talktime = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
+                long talktime = Long.parseLong(conversation.getEndTime())
+                        - Long.parseLong(conversation.getStartTime())
+                        - getSum(conversation.getSleepTimes())
+                        - getSum(conversation.getMuteTimes())
+                        - getSum(conversation.getDeafTimes())
+                        - getSum(conversation.getIdleTimes());
                 sum+=talktime;
                 double sumpercent = ((double) sum / (double) highestsum) * 100;
                 sums.add(sumpercent);
@@ -104,6 +109,15 @@ public class PlotCreator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public long getSum(String[] data) {
+        long sum = 0;
+        if (data==null) return 0;
+        for (String dat:data) {
+            sum += Long.parseLong(dat.split("-")[1])-Long.parseLong(dat.split("-")[0]);
+        }
+        return sum;
     }
 
 }
