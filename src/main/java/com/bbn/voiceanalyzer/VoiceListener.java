@@ -28,13 +28,13 @@ public class VoiceListener extends ListenerAdapter {
         if (!event.getOldName().endsWith(" - Sleep") && event.getNewName().endsWith(" - Sleep")) {
             for (Member member : event.getChannel().getMembers()) {
                 rethink.setSleep(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set sleep for "+member.getUser().getAsTag()).queue();
+                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set sleep for " + member.getUser().getAsTag()).queue();
             }
         }
         if (event.getOldName().endsWith(" - Sleep") && !event.getNewName().endsWith(" - Sleep")) {
             for (Member member : event.getChannel().getMembers()) {
                 rethink.setAwake(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set awake for "+member.getUser().getAsTag()).queue();
+                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set awake for " + member.getUser().getAsTag()).queue();
             }
         }
     }
@@ -48,14 +48,22 @@ public class VoiceListener extends ListenerAdapter {
     public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
         // Start conversation
         rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
-        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of "+event.getMember().getUser().getAsTag()).queue();
+        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of " + event.getMember().getUser().getAsTag()).queue();
+        if (event.getChannelJoined().getMembers().size()==2) {
+            for (Member member : event.getChannelJoined().getMembers()) {
+                rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            }
+        }
     }
 
     @Override
     public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         // Stop conversation => Conversation Time, Members in Conversation
-        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of "+event.getMember().getUser().getAsTag()).queue();
+        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        if (event.getChannelLeft().getMembers().size()==1) {
+            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        }
     }
 
     @Override
@@ -66,10 +74,10 @@ public class VoiceListener extends ListenerAdapter {
             public void run() {
                 if (event.isMuted()) {
                     rethink.setMuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set muted of "+event.getMember().getUser().getAsTag()).queue();
+                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set muted of " + event.getMember().getUser().getAsTag()).queue();
                 } else {
                     rethink.setUnmuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set unmuted of "+event.getMember().getUser().getAsTag()).queue();
+                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set unmuted of " + event.getMember().getUser().getAsTag()).queue();
                 }
             }
         }, 2500);
@@ -83,10 +91,10 @@ public class VoiceListener extends ListenerAdapter {
             public void run() {
                 if (event.isDeafened()) {
                     rethink.setDeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set deafen of "+event.getMember().getUser().getAsTag()).queue();
+                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set deafen of " + event.getMember().getUser().getAsTag()).queue();
                 } else {
                     rethink.setUndeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set undeafen of "+event.getMember().getUser().getAsTag()).queue();
+                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set undeafen of " + event.getMember().getUser().getAsTag()).queue();
                 }
             }
         }, 1000);
@@ -95,10 +103,24 @@ public class VoiceListener extends ListenerAdapter {
     @Override
     public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
         // Stop and Start the conversation
-        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of "+event.getMember().getUser().getAsTag()).queue();
+        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-        rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
-        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of "+event.getMember().getUser().getAsTag()).queue();
+        if (event.getChannelLeft().getMembers().size()==1) {
+            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        }
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
+                event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of " + event.getMember().getUser().getAsTag()).queue();
+                if (event.getChannelJoined().getMembers().size()==2) {
+                    for (Member member : event.getChannelJoined().getMembers()) {
+                        rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    }
+                }
+            }
+        }, 1000);
     }
 
     @Override

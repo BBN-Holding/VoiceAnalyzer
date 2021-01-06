@@ -97,7 +97,9 @@ public class Rethink {
         String[] mutes;
         if (conversation.getMuteTimes() != null) {
             ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getMuteTimes()));
-            list.add(timestamp + "-");
+            if (!conversation.getMuteTimes()[conversation.getMuteTimes().length-1].endsWith("-")) {
+                list.add(timestamp + "-");
+            }
             mutes = list.toArray(String[]::new);
         } else
             mutes = Arrays.asList(timestamp + "-").toArray(String[]::new);
@@ -120,7 +122,9 @@ public class Rethink {
         String[] deafes;
         if (conversation.getDeafTimes() != null) {
             ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getDeafTimes()));
-            list.add(timestamp + "-");
+            if (!conversation.getDeafTimes()[conversation.getDeafTimes().length-1].endsWith("-")) {
+                list.add(timestamp + "-");
+            }
             deafes = list.toArray(String[]::new);
         } else
             deafes = Arrays.asList(timestamp + "-").toArray(String[]::new);
@@ -143,7 +147,9 @@ public class Rethink {
         String[] afk;
         if (conversation.getIdleTimes() != null) {
             ArrayList<String> list = new ArrayList(Arrays.asList(conversation.getIdleTimes()));
-            list.add(timestamp + "-");
+            if (!conversation.getIdleTimes()[conversation.getIdleTimes().length-1].endsWith("-")) {
+                list.add(timestamp + "-");
+            }
             afk = list.toArray(String[]::new);
         } else
             afk = Arrays.asList(timestamp + "-").toArray(String[]::new);
@@ -164,9 +170,11 @@ public class Rethink {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
 
         String[] sleep;
-        if (conversation.getIdleTimes() != null) {
+        if (conversation.getSleepTimes() != null) {
             ArrayList<String> list = new ArrayList<>(Arrays.asList(conversation.getSleepTimes()));
-            list.add(timestamp + "-");
+            if (!conversation.getSleepTimes()[conversation.getSleepTimes().length-1].endsWith("-")) {
+                list.add(timestamp + "-");
+            }
             sleep = list.toArray(String[]::new);
         } else {
             sleep = Arrays.asList(timestamp + "-").toArray(String[]::new);
@@ -178,7 +186,7 @@ public class Rethink {
     public void setAwake(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
         if (conversation.getSleepTimes() != null) {
-            conversation.getSleepTimes()[conversation.getSleepTimes().length-1] = conversation.getSleepTimes()[conversation.getSleepTimes().length-1] + timestamp;
+            conversation.getSleepTimes()[conversation.getSleepTimes().length - 1] = conversation.getSleepTimes()[conversation.getSleepTimes().length - 1] + timestamp;
             setLastConversation(userid, guildid, conversation);
         }
     }
