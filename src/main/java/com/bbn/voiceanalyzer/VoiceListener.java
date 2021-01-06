@@ -72,7 +72,7 @@ public class VoiceListener extends ListenerAdapter {
                     event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set unmuted of "+event.getMember().getUser().getAsTag()).queue();
                 }
             }
-        }, 1000);
+        }, 2500);
     }
 
     @Override
