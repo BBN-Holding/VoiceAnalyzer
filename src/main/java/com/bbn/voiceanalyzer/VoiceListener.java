@@ -62,7 +62,7 @@ public class VoiceListener extends ListenerAdapter {
         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         if (event.getChannelLeft().getMembers().size()==1) {
-            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
     }
 
@@ -106,7 +106,7 @@ public class VoiceListener extends ListenerAdapter {
         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         if (event.getChannelLeft().getMembers().size()==1) {
-            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
 
         new Timer().schedule(new TimerTask() {
