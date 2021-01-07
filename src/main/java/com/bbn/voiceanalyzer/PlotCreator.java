@@ -115,6 +115,7 @@ public class PlotCreator {
         long sum = 0;
         if (data==null) return 0;
         for (String dat:data) {
+            if (dat.endsWith("-")) dat+=System.currentTimeMillis();
             sum += Long.parseLong(dat.split("-")[1])-Long.parseLong(dat.split("-")[0]);
         }
         return sum;

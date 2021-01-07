@@ -54,6 +54,9 @@ public class VoiceListener extends ListenerAdapter {
                 rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
             }
         }
+        if (event.getChannelJoined().getMembers().size()==1) {
+            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        }
     }
 
     @Override
@@ -118,6 +121,8 @@ public class VoiceListener extends ListenerAdapter {
                     for (Member member : event.getChannelJoined().getMembers()) {
                         rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                     }
+                } else if (event.getChannelJoined().getMembers().size()==1) {
+                    rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 }
             }
         }, 1000);
