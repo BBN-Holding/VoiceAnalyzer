@@ -30,14 +30,13 @@ public class CommandListener extends ListenerAdapter {
                 calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
     }
 
-    public long getSum(String[] data) {
-        long sum = 0L;
-        if (data != null) {
-            for (String time : data) {
-                if (time.endsWith("-")) time += System.currentTimeMillis();
-                String[] split = time.split("-");
-                sum += Long.parseLong(split[1]) - Long.parseLong(split[0]);
-            }
+    public long getSum(String[] data, String endtime) {
+        long sum = 0;
+        if (data == null) return 0;
+        if (endtime == null) endtime = String.valueOf(System.currentTimeMillis());
+        for (String dat : data) {
+            if (dat.endsWith("-")) dat += endtime;
+            sum += Long.parseLong(dat.split("-")[1]) - Long.parseLong(dat.split("-")[0]);
         }
         return sum;
     }
@@ -58,10 +57,10 @@ public class CommandListener extends ListenerAdapter {
                         for (Object conversationobj : conversations) {
                             Conversation conversation = new Conversation((JSONObject) conversationobj);
                             time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                            time -= getSum(conversation.getMuteTimes());
-                            time -= getSum(conversation.getIdleTimes());
-                            time -= getSum(conversation.getDeafTimes());
-                            time -= getSum(conversation.getSleepTimes());
+                            time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                            time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                            time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                            time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
                         }
                         timetoid.put(time, member.getId());
                     }
@@ -79,7 +78,7 @@ public class CommandListener extends ListenerAdapter {
                         Member member = event.getGuild().getMemberById(entry.getValue());
                         JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
                         data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                        sb.append((list.indexOf(entry)+1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
                     }
                 }
 
@@ -117,13 +116,13 @@ public class CommandListener extends ListenerAdapter {
             for (Object conversationobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationobj);
                 connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                muted += getSum(conversation.getMuteTimes());
-                deafed += getSum(conversation.getDeafTimes());
-                idle += getSum(conversation.getIdleTimes());
-                sleep += getSum(conversation.getSleepTimes());
+                muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
             }
 
-            long total = connected-muted-deafed-idle-sleep;
+            long total = connected - muted - deafed - idle - sleep;
 
             // Draw Plot, Save it
             new PlotCreator().createStat(conversations);

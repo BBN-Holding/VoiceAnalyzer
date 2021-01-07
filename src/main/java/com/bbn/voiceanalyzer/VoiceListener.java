@@ -49,12 +49,12 @@ public class VoiceListener extends ListenerAdapter {
         // Start conversation
         rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of " + event.getMember().getUser().getAsTag()).queue();
-        if (event.getChannelJoined().getMembers().size()==2) {
+        if (event.getChannelJoined().getMembers().size() == 2) {
             for (Member member : event.getChannelJoined().getMembers()) {
                 rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
             }
         }
-        if (event.getChannelJoined().getMembers().size()==1) {
+        if (event.getChannelJoined().getMembers().size() == 1) {
             rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
     }
@@ -64,7 +64,7 @@ public class VoiceListener extends ListenerAdapter {
         // Stop conversation => Conversation Time, Members in Conversation
         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-        if (event.getChannelLeft().getMembers().size()==1) {
+        if (event.getChannelLeft().getMembers().size() == 1) {
             rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
     }
@@ -108,7 +108,7 @@ public class VoiceListener extends ListenerAdapter {
         // Stop and Start the conversation
         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Stopped Conversation of " + event.getMember().getUser().getAsTag()).queue();
         rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-        if (event.getChannelLeft().getMembers().size()==1) {
+        if (event.getChannelLeft().getMembers().size() == 1) {
             rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
 
@@ -117,11 +117,11 @@ public class VoiceListener extends ListenerAdapter {
             public void run() {
                 rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
                 event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Started Conversation of " + event.getMember().getUser().getAsTag()).queue();
-                if (event.getChannelJoined().getMembers().size()==2) {
+                if (event.getChannelJoined().getMembers().size() == 2) {
                     for (Member member : event.getChannelJoined().getMembers()) {
                         rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                     }
-                } else if (event.getChannelJoined().getMembers().size()==1) {
+                } else if (event.getChannelJoined().getMembers().size() == 1) {
                     rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 }
             }
@@ -133,7 +133,7 @@ public class VoiceListener extends ListenerAdapter {
         // Start/Stop afk on conversation => AFK Time
         if (event.getMember().getVoiceState() != null) {
             if (event.getMember().getVoiceState().inVoiceChannel()) {
-                if (event.getMember().getVoiceState().getChannel().getMembers().size()!=1) {
+                if (event.getMember().getVoiceState().getChannel().getMembers().size() != 1) {
                     if (event.getNewOnlineStatus().equals(OnlineStatus.IDLE)) {
                         // Start afk
                         event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set afk of " + event.getMember().getUser().getAsTag()).queue();

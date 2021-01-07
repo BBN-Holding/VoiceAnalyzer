@@ -87,11 +87,11 @@ public class PlotCreator {
 
                 long talktime = Long.parseLong(conversation.getEndTime())
                         - Long.parseLong(conversation.getStartTime())
-                        - getSum(conversation.getSleepTimes())
-                        - getSum(conversation.getMuteTimes())
-                        - getSum(conversation.getDeafTimes())
-                        - getSum(conversation.getIdleTimes());
-                sum+=talktime;
+                        - getSum(conversation.getSleepTimes(), conversation.getEndTime())
+                        - getSum(conversation.getMuteTimes(), conversation.getEndTime())
+                        - getSum(conversation.getDeafTimes(), conversation.getEndTime())
+                        - getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                sum += talktime;
                 double sumpercent = ((double) sum / (double) highestsum) * 100;
                 sums.add(sumpercent);
             }
@@ -111,12 +111,13 @@ public class PlotCreator {
         }
     }
 
-    public long getSum(String[] data) {
+    public long getSum(String[] data, String endtime) {
         long sum = 0;
-        if (data==null) return 0;
-        for (String dat:data) {
-            if (dat.endsWith("-")) dat+=System.currentTimeMillis();
-            sum += Long.parseLong(dat.split("-")[1])-Long.parseLong(dat.split("-")[0]);
+        if (data == null) return 0;
+        if (endtime == null) endtime = String.valueOf(System.currentTimeMillis());
+        for (String dat : data) {
+            if (dat.endsWith("-")) dat += endtime;
+            sum += Long.parseLong(dat.split("-")[1]) - Long.parseLong(dat.split("-")[0]);
         }
         return sum;
     }
