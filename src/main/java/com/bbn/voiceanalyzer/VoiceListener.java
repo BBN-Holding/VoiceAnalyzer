@@ -133,14 +133,16 @@ public class VoiceListener extends ListenerAdapter {
         // Start/Stop afk on conversation => AFK Time
         if (event.getMember().getVoiceState() != null) {
             if (event.getMember().getVoiceState().inVoiceChannel()) {
-                if (event.getNewOnlineStatus().equals(OnlineStatus.IDLE)) {
-                    // Start afk
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set afk of " + event.getMember().getUser().getAsTag()).queue();
-                    rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                } else if (event.getNewOnlineStatus().equals(OnlineStatus.ONLINE)) {
-                    // Stop afk
-                    rethink.setOnline(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set online of " + event.getMember().getUser().getAsTag()).queue();
+                if (event.getMember().getVoiceState().getChannel().getMembers().size()!=1) {
+                    if (event.getNewOnlineStatus().equals(OnlineStatus.IDLE)) {
+                        // Start afk
+                        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set afk of " + event.getMember().getUser().getAsTag()).queue();
+                        rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    } else if (event.getNewOnlineStatus().equals(OnlineStatus.ONLINE)) {
+                        // Stop afk
+                        rethink.setOnline(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                        event.getGuild().getTextChannelById(config.getString("channel")).sendMessage("Set online of " + event.getMember().getUser().getAsTag()).queue();
+                    }
                 }
             }
         }
