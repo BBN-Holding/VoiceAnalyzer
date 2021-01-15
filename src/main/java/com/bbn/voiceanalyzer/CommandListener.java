@@ -1,7 +1,9 @@
 package com.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -73,6 +75,7 @@ public class CommandListener extends ListenerAdapter {
 
                 // Build outputstring, Build data object
                 StringBuilder sb = new StringBuilder();
+                updateRoles(event, list);
                 for (Map.Entry<Long, String> entry : list) {
                     if (list.indexOf(entry) < 10) {
                         Member member = event.getGuild().getMemberById(entry.getValue());
@@ -151,6 +154,22 @@ public class CommandListener extends ListenerAdapter {
                                     .build()
                     ).queue()
             );
+        }
+    }
+
+    public void updateRoles(MessageReceivedEvent event, List<Map.Entry<Long, String>> list) {
+        Role role = event.getGuild().getRoleById(config.getString("TOP_ROLE"));
+        for (Map.Entry<Long, String> entry : list) {
+            Member member = event.getGuild().getMemberById(entry.getValue());
+            if (list.indexOf(entry) < 10) {
+                if (!member.getPermissions().contains(Permission.ADMINISTRATOR)) {
+                    if (!member.getRoles().contains(role)) {
+                        event.getGuild().addRoleToMember(member, role).queue();
+                    }
+                }
+            } else if (member.getRoles().contains(role)) {
+                event.getGuild().removeRoleFromMember(member, role).queue();
+            }
         }
     }
 }
