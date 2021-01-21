@@ -24,10 +24,10 @@ public class PlotCreator {
 
         // Series
         ArrayList<Double> doubles = new ArrayList<>();
-        for (Object conversationobj : conversations) {
-            if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
-                    || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
-                Conversation conversation = new Conversation((JSONObject) conversationobj);
+        for (int i = 0; i < conversations.length(); i++) {
+            JSONObject conversationobj = conversations.getJSONObject(i);
+            Conversation conversation = new Conversation(conversationobj);
+            if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
                 doubles.add((double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime())) / 1000 / 60 / 60);
             }
         }
@@ -58,10 +58,10 @@ public class PlotCreator {
             JSONObject member = (JSONObject) memberobj;
             JSONArray conversations = new JSONArray(member.getString("conversations"));
             long sum = 0;
-            for (Object conversationobj : conversations) {
-                if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
-                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
-                    Conversation conversation = new Conversation((JSONObject) conversationobj);
+            for (int i = 0; i < conversations.length(); i++) {
+                JSONObject conversationobj = conversations.getJSONObject(i);
+                Conversation conversation = new Conversation(conversationobj);
+                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
                     long start = Long.parseLong(conversation.getStartTime());
                     if (start < loweststarttime || loweststarttime == 0) loweststarttime = start;
                     long end = Long.parseLong(conversation.getEndTime());
@@ -79,10 +79,10 @@ public class PlotCreator {
             ArrayList<Double> starttimes = new ArrayList<>();
             ArrayList<Double> sums = new ArrayList<>();
             long sum = 0;
-            for (Object conversationsobj : conversations) {
-                if (((JSONObject) conversationsobj).has("startTime") &&  (((JSONObject) conversationsobj).has("endTime")
-                        || conversations.toList().indexOf(conversationsobj)==conversations.length()-1)) {
-                    Conversation conversation = new Conversation((JSONObject) conversationsobj);
+            for (int i = 0; i < conversations.length(); i++) {
+                JSONObject conversationobj = conversations.getJSONObject(i);
+                Conversation conversation = new Conversation(conversationobj);
+                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
                     long starttime = Long.parseLong(conversation.getStartTime()) - loweststarttime;
                     double timepercent = ((double) starttime / (double) totaltime) * 100;
                     starttimes.add(timepercent);

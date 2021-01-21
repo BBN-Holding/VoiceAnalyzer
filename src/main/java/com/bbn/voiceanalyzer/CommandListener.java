@@ -58,10 +58,10 @@ public class CommandListener extends ListenerAdapter {
                         if (!memberjson.getString("conversations").equals("[]")) {
                             JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
                             long time = 0L;
-                            for (Object conversationobj : conversations) {
-                                if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
-                                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
-                                    Conversation conversation = new Conversation((JSONObject) conversationobj);
+                            for (int i = 0; i < conversations.length(); i++) {
+                                JSONObject conversationobj = conversations.getJSONObject(i);
+                                Conversation conversation = new Conversation(conversationobj);
+                                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
                                     time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
                                     time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
                                     time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
@@ -114,7 +114,7 @@ public class CommandListener extends ListenerAdapter {
             Member member = event.getMember();
             if (event.getMessage().getMentionedMembers().size() == 1)
                 member = event.getMessage().getMentionedMembers().get(0);
-            else if (event.getMessage().getContentRaw().split(" ").length==2) {
+            else if (event.getMessage().getContentRaw().split(" ").length == 2) {
                 member = event.getGuild().getMemberById(event.getMessage().getContentRaw().split(" ")[1]);
             }
 
@@ -127,10 +127,10 @@ public class CommandListener extends ListenerAdapter {
             long deafed = 0;
             long idle = 0;
             long sleep = 0;
-            for (Object conversationobj : conversations) {
-                Conversation conversation = new Conversation((JSONObject) conversationobj);
-                if (((JSONObject) conversationobj).has("startTime") && (((JSONObject) conversationobj).has("endTime")
-                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
+            for (int i = 0; i < conversations.length(); i++) {
+                JSONObject conversationobj = conversations.getJSONObject(i);
+                Conversation conversation = new Conversation(conversationobj);
+                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
                     connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
                     muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
                     deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
