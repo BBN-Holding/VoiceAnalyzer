@@ -25,8 +25,11 @@ public class PlotCreator {
         // Series
         ArrayList<Double> doubles = new ArrayList<>();
         for (Object conversationobj : conversations) {
-            Conversation conversation = new Conversation((JSONObject) conversationobj);
-            doubles.add((double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime())) / 1000 / 60 / 60);
+            if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
+                    || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
+                Conversation conversation = new Conversation((JSONObject) conversationobj);
+                doubles.add((double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime())) / 1000 / 60 / 60);
+            }
         }
         chart.addSeries("Conversation", doubles.stream().mapToDouble(d -> d).toArray());
 
@@ -56,12 +59,15 @@ public class PlotCreator {
             JSONArray conversations = new JSONArray(member.getString("conversations"));
             long sum = 0;
             for (Object conversationobj : conversations) {
-                Conversation conversation = new Conversation((JSONObject) conversationobj);
-                long start = Long.parseLong(conversation.getStartTime());
-                if (start < loweststarttime || loweststarttime == 0) loweststarttime = start;
-                long end = Long.parseLong(conversation.getEndTime());
-                if (higheststarttime < end) higheststarttime = end;
-                sum += end - start;
+                if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
+                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
+                    Conversation conversation = new Conversation((JSONObject) conversationobj);
+                    long start = Long.parseLong(conversation.getStartTime());
+                    if (start < loweststarttime || loweststarttime == 0) loweststarttime = start;
+                    long end = Long.parseLong(conversation.getEndTime());
+                    if (higheststarttime < end) higheststarttime = end;
+                    sum += end - start;
+                }
             }
             if (highestsum < sum) highestsum = sum;
         }
@@ -74,26 +80,29 @@ public class PlotCreator {
             ArrayList<Double> sums = new ArrayList<>();
             long sum = 0;
             for (Object conversationsobj : conversations) {
-                Conversation conversation = new Conversation((JSONObject) conversationsobj);
-                long starttime = Long.parseLong(conversation.getStartTime()) - loweststarttime;
-                double timepercent = ((double) starttime / (double) totaltime) * 100;
-                starttimes.add(timepercent);
+                if (((JSONObject) conversationsobj).has("startTime") &&  (((JSONObject) conversationsobj).has("endTime")
+                        || conversations.toList().indexOf(conversationsobj)==conversations.length()-1)) {
+                    Conversation conversation = new Conversation((JSONObject) conversationsobj);
+                    long starttime = Long.parseLong(conversation.getStartTime()) - loweststarttime;
+                    double timepercent = ((double) starttime / (double) totaltime) * 100;
+                    starttimes.add(timepercent);
 
-                long endtime = Long.parseLong(conversation.getEndTime()) - loweststarttime;
-                double endtimepercent = ((double) endtime / (double) totaltime) * 100;
-                starttimes.add(endtimepercent);
+                    long endtime = Long.parseLong(conversation.getEndTime()) - loweststarttime;
+                    double endtimepercent = ((double) endtime / (double) totaltime) * 100;
+                    starttimes.add(endtimepercent);
 
-                sums.add(((double) sum / (double) highestsum) * 100);
+                    sums.add(((double) sum / (double) highestsum) * 100);
 
-                long talktime = Long.parseLong(conversation.getEndTime())
-                        - Long.parseLong(conversation.getStartTime())
-                        - getSum(conversation.getSleepTimes(), conversation.getEndTime())
-                        - getSum(conversation.getMuteTimes(), conversation.getEndTime())
-                        - getSum(conversation.getDeafTimes(), conversation.getEndTime())
-                        - getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                sum += talktime;
-                double sumpercent = ((double) sum / (double) highestsum) * 100;
-                sums.add(sumpercent);
+                    long talktime = Long.parseLong(conversation.getEndTime())
+                            - Long.parseLong(conversation.getStartTime())
+                            - getSum(conversation.getSleepTimes(), conversation.getEndTime())
+                            - getSum(conversation.getMuteTimes(), conversation.getEndTime())
+                            - getSum(conversation.getDeafTimes(), conversation.getEndTime())
+                            - getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                    sum += talktime;
+                    double sumpercent = ((double) sum / (double) highestsum) * 100;
+                    sums.add(sumpercent);
+                }
             }
             chart.addSeries(member.getString("Tag"), starttimes.stream().mapToDouble(d -> d).toArray(), sums.stream().mapToDouble(d -> d).toArray());
         }

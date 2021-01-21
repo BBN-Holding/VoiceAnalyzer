@@ -46,66 +46,77 @@ public class CommandListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.getMessage().getContentRaw().equals("+statstop")) {
+
             event.getGuild().loadMembers().onSuccess(members -> {
-                JSONArray data = new JSONArray();
-                HashMap<Long, String> timetoid = new HashMap<>();
+                try {
+                    JSONArray data = new JSONArray();
+                    HashMap<Long, String> timetoid = new HashMap<>();
 
-                // Get all voice times
-                for (Member member : members) {
-                    JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
-                    if (!memberjson.getString("conversations").equals("[]")) {
-                        JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
-                        long time = 0L;
-                        for (Object conversationobj : conversations) {
-                            Conversation conversation = new Conversation((JSONObject) conversationobj);
-                            time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                            time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
-                            time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                            time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
-                            time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
-                        }
-                        timetoid.put(time, member.getId());
-                    }
-                }
-                // Sort and reverse the list
-                Set<Map.Entry<Long, String>> set = timetoid.entrySet();
-                List<Map.Entry<Long, String>> list = new ArrayList<>(set);
-                list.sort((Map.Entry.comparingByKey()));
-                Collections.reverse(list);
-
-                // Build outputstring, Build data object
-                StringBuilder sb = new StringBuilder();
-                updateRoles(event, list);
-                for (Map.Entry<Long, String> entry : list) {
-                    if (list.indexOf(entry) < 10) {
-                        Member member = event.getGuild().getMemberById(entry.getValue());
+                    // Get all voice times
+                    for (Member member : members) {
                         JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
-                        data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                        sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        if (!memberjson.getString("conversations").equals("[]")) {
+                            JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
+                            long time = 0L;
+                            for (Object conversationobj : conversations) {
+                                if (((JSONObject) conversationobj).has("startTime") &&  (((JSONObject) conversationobj).has("endTime")
+                                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
+                                    Conversation conversation = new Conversation((JSONObject) conversationobj);
+                                    time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                                    time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                                    time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                                    time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                                    time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
+                                }
+                            }
+                            timetoid.put(time, member.getId());
+                        }
                     }
+                    // Sort and reverse the list
+                    Set<Map.Entry<Long, String>> set = timetoid.entrySet();
+                    List<Map.Entry<Long, String>> list = new ArrayList<>(set);
+                    list.sort((Map.Entry.comparingByKey()));
+                    Collections.reverse(list);
+
+                    // Build outputstring, Build data object
+                    StringBuilder sb = new StringBuilder();
+                    updateRoles(event, list);
+                    for (Map.Entry<Long, String> entry : list) {
+                        if (list.indexOf(entry) < 10) {
+                            Member member = event.getGuild().getMemberById(entry.getValue());
+                            JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
+                            data.put(memberjson.put("Tag", member.getUser().getAsTag()));
+                            sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        }
+                    }
+
+                    // Draw Plot, Save it
+                    new PlotCreator().createStatstop(data);
+
+                    // Send Plot from file in storagechannel, Send final message
+                    event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                            msg -> event.getTextChannel().sendMessage(
+                                    new EmbedBuilder()
+                                            .setTitle("Statstop")
+                                            .setDescription(sb.toString())
+                                            .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                            .setImage(msg.getAttachments().get(0).getUrl())
+                                            .setTimestamp(Instant.now())
+                                            .build()
+                            ).queue()
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                // Draw Plot, Save it
-                new PlotCreator().createStatstop(data);
-
-                // Send Plot from file in storagechannel, Send final message
-                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
-                        msg -> event.getTextChannel().sendMessage(
-                                new EmbedBuilder()
-                                        .setTitle("Statstop")
-                                        .setDescription(sb.toString())
-                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
-                                        .setImage(msg.getAttachments().get(0).getUrl())
-                                        .setTimestamp(Instant.now())
-                                        .build()
-                        ).queue()
-                );
             });
         } else if (event.getMessage().getContentRaw().startsWith("+stats")) {
             // Get Member
             Member member = event.getMember();
             if (event.getMessage().getMentionedMembers().size() == 1)
                 member = event.getMessage().getMentionedMembers().get(0);
+            else if (event.getMessage().getContentRaw().split(" ").length==2) {
+                member = event.getGuild().getMemberById(event.getMessage().getContentRaw().split(" ")[1]);
+            }
 
             // Get Conversation Object
             JSONArray conversations = new JSONArray(rethink.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
@@ -118,11 +129,14 @@ public class CommandListener extends ListenerAdapter {
             long sleep = 0;
             for (Object conversationobj : conversations) {
                 Conversation conversation = new Conversation((JSONObject) conversationobj);
-                connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
-                deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
-                idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
+                if (((JSONObject) conversationobj).has("startTime") && (((JSONObject) conversationobj).has("endTime")
+                        || conversations.toList().indexOf(conversationobj)==conversations.length()-1)) {
+                    connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                    muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                    deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                    idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                    sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
+                }
             }
 
             long total = connected - muted - deafed - idle - sleep;
