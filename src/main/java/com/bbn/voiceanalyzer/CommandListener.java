@@ -10,9 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.File;
 import java.time.Instant;
 import java.util.*;
+import java.util.List;
 
 public class CommandListener extends ListenerAdapter {
 
@@ -45,8 +47,14 @@ public class CommandListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        if (event.getMessage().getContentRaw().equals("+statstop")) {
-
+        if (event.getMessage().getContentRaw().equals("+help")) {
+            event.getTextChannel().sendMessage(
+                    new EmbedBuilder()
+                            .setTitle("Help")
+                            .addField("+stats", "Shows your own Voicestats", true)
+                            .addField("+statstop", "Shows the Voice Leaderboard", true)
+                            .build()).queue();
+        } else if (event.getMessage().getContentRaw().equals("+statstop")) {
             event.getGuild().loadMembers().onSuccess(members -> {
                 try {
                     JSONArray data = new JSONArray();
@@ -120,54 +128,62 @@ public class CommandListener extends ListenerAdapter {
 
             // Get Conversation Object
             JSONArray conversations = new JSONArray(rethink.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
-
-            // Get Field Values
-            long connected = 0;
-            long muted = 0;
-            long deafed = 0;
-            long idle = 0;
-            long sleep = 0;
-            for (int i = 0; i < conversations.length(); i++) {
-                JSONObject conversationobj = conversations.getJSONObject(i);
-                Conversation conversation = new Conversation(conversationobj);
-                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
-                    connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                    muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
-                    deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
-                    idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                    sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
+            if (conversations.length()!=0) {
+                // Get Field Values
+                long connected = 0;
+                long muted = 0;
+                long deafed = 0;
+                long idle = 0;
+                long sleep = 0;
+                for (int i = 0; i < conversations.length(); i++) {
+                    JSONObject conversationobj = conversations.getJSONObject(i);
+                    Conversation conversation = new Conversation(conversationobj);
+                    if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
+                        connected += (double) (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                        muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                        deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                        idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                        sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
+                    }
                 }
+
+                long total = connected - muted - deafed - idle - sleep;
+
+                // Draw Plot, Save it
+                new PlotCreator().createStat(conversations);
+
+                // Send Plot from file in storagechannel, Send final message
+                Member finalMember = member;
+                long finalConnected = connected;
+                long finalMuted = muted;
+                long finalIdle = idle;
+                long finalDeafed = deafed;
+                long finalSleep = sleep;
+                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                        msg -> event.getTextChannel().sendMessage(
+                                new EmbedBuilder()
+                                        .setTitle("Stats")
+                                        .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
+                                        .addField("Conversations", String.valueOf(conversations.length()), true)
+                                        .addField("Time", getTime(finalConnected), true)
+                                        .addField("Muted", getTime(finalMuted), true)
+                                        .addField("Deafened", getTime(finalDeafed), true)
+                                        .addField("Idle", getTime(finalIdle), true)
+                                        .addField("Sleep", getTime(finalSleep), true)
+                                        .addField("Total", getTime(total), true)
+                                        .setImage(msg.getAttachments().get(0).getUrl())
+                                        .setTimestamp(Instant.now())
+                                        .build()
+                        ).queue()
+                );
+            } else {
+                event.getTextChannel().sendMessage(
+                        new EmbedBuilder()
+                                .setTitle("Error")
+                                .setColor(Color.RED)
+                                .setDescription("You don't have any stats. Join Voice!")
+                                .build()).queue();
             }
-
-            long total = connected - muted - deafed - idle - sleep;
-
-            // Draw Plot, Save it
-            new PlotCreator().createStat(conversations);
-
-            // Send Plot from file in storagechannel, Send final message
-            Member finalMember = member;
-            long finalConnected = connected;
-            long finalMuted = muted;
-            long finalIdle = idle;
-            long finalDeafed = deafed;
-            long finalSleep = sleep;
-            event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
-                    msg -> event.getTextChannel().sendMessage(
-                            new EmbedBuilder()
-                                    .setTitle("Stats")
-                                    .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
-                                    .addField("Conversations", String.valueOf(conversations.length()), true)
-                                    .addField("Time", getTime(finalConnected), true)
-                                    .addField("Muted", getTime(finalMuted), true)
-                                    .addField("Deafened", getTime(finalDeafed), true)
-                                    .addField("Idle", getTime(finalIdle), true)
-                                    .addField("Sleep", getTime(finalSleep), true)
-                                    .addField("Total", getTime(total), true)
-                                    .setImage(msg.getAttachments().get(0).getUrl())
-                                    .setTimestamp(Instant.now())
-                                    .build()
-                    ).queue()
-            );
         }
     }
 
