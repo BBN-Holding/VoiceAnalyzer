@@ -54,7 +54,16 @@ public class CommandListener extends ListenerAdapter {
                             .addField("+stats", "Shows your own Voicestats", true)
                             .addField("+statstop", "Shows the Voice Leaderboard", true)
                             .build()).queue();
-        } else if (event.getMessage().getContentRaw().equals("+statstop")) {
+        } else if (event.getMessage().getContentRaw().startsWith("+statstop")) {
+            String[] split = event.getMessage().getContentRaw().split(" ");
+            int count = 10;
+            if (split.length==2) {
+                int temp = Integer.parseInt(split[1]);
+                if (temp>0&&temp<100) {
+                    count = temp;
+                }
+            }
+            int finalCount = count;
             event.getGuild().loadMembers().onSuccess(members -> {
                 try {
                     JSONArray data = new JSONArray();
@@ -90,7 +99,7 @@ public class CommandListener extends ListenerAdapter {
                     StringBuilder sb = new StringBuilder();
                     updateRoles(event, list);
                     for (Map.Entry<Long, String> entry : list) {
-                        if (list.indexOf(entry) < 10) {
+                        if (list.indexOf(entry) < finalCount) {
                             Member member = event.getGuild().getMemberById(entry.getValue());
                             JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
                             data.put(memberjson.put("Tag", member.getUser().getAsTag()));
