@@ -30,7 +30,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@v0.7.3
         with:
           local: ./target/VoiceAnalyzer-Build.jar
-          remote: /root/bots/Hadder/VoiceAnalyzer-Build.jar
+          remote: /root/bots/VoiceAnalyzer/VoiceAnalyzer-Build.jar
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
