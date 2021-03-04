@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          script: /root/bots/VoiceAnalyzer/deploy.sh
+          script: sh /root/bots/VoiceAnalyzer/deploy.sh
       - name: Send Webhook Notification
         if: always()
         env:
