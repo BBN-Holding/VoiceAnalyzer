@@ -200,7 +200,7 @@ public class CommandListener extends ListenerAdapter {
         Role role = event.getGuild().getRoleById(config.getString("TOP_ROLE"));
         for (Map.Entry<Long, String> entry : list) {
             Member member = event.getGuild().getMemberById(entry.getValue());
-            if (list.indexOf(entry) < 10) {
+            if (list.indexOf(entry) < 11) {
                 if (!member.getPermissions().contains(Permission.ADMINISTRATOR)) {
                     if (!member.getRoles().contains(role)) {
                         event.getGuild().addRoleToMember(member, role).queue();
