@@ -107,11 +107,8 @@ public class CommandListener extends ListenerAdapter {
                         }
                     }
 
-                    // Draw Plot, Save it
-                    new PlotCreator().createStatstop(data);
-
                     // Send Plot from file in storagechannel, Send final message
-                    event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                    event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new PlotCreator().createStatstop(data), "Chart.png").queue(
                             msg -> event.getTextChannel().sendMessage(
                                     new EmbedBuilder()
                                             .setTitle("Statstop")
