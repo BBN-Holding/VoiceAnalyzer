@@ -158,9 +158,6 @@ public class CommandListener extends ListenerAdapter {
 
                 long total = connected - muted - deafed - idle - sleep;
 
-                // Draw Plot, Save it
-                new PlotCreator().createStat(conversations);
-
                 // Send Plot from file in storagechannel, Send final message
                 Member finalMember = member;
                 long finalConnected = connected;
@@ -168,7 +165,7 @@ public class CommandListener extends ListenerAdapter {
                 long finalIdle = idle;
                 long finalDeafed = deafed;
                 long finalSleep = sleep;
-                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new File("./Chart.png")).queue(
+                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new PlotCreator().createStat(conversations), "Chart.png").queue(
                         msg -> event.getTextChannel().sendMessage(
                                 new EmbedBuilder()
                                         .setTitle("Stats")

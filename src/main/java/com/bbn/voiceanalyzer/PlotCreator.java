@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class PlotCreator {
 
-    public void createStat(JSONArray conversations) {
+    public byte[] createStat(JSONArray conversations) {
         // Create Chart
         final XYChart chart = new XYChartBuilder().width(1000).height(400).title("Connected Time Per Conversation").xAxisTitle("Conversations").yAxisTitle("Hours").build();
 
@@ -37,13 +37,14 @@ public class PlotCreator {
 
         // Save it
         try {
-            BitmapEncoder.saveBitmap(chart, "./Chart", BitmapEncoder.BitmapFormat.PNG);
+            return BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    public void createStatstop(JSONArray data) {
+    public byte[] createStatstop(JSONArray data) {
         // Create Chart
         final XYChart chart = new XYChartBuilder().width(1000).height(400).title("Statstop Graph").xAxisTitle("% of Starttime").yAxisTitle("% of Hours").build();
 
@@ -114,10 +115,11 @@ public class PlotCreator {
 
         // Save it
         try {
-            BitmapEncoder.saveBitmap(chart, "./Chart", BitmapEncoder.BitmapFormat.PNG);
+            return BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public long getSum(String[] data, String endtime) {
