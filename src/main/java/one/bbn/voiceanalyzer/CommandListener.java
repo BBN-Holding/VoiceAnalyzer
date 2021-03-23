@@ -56,9 +56,9 @@ public class CommandListener extends ListenerAdapter {
         } else if (event.getMessage().getContentRaw().startsWith("+statstop")) {
             String[] split = event.getMessage().getContentRaw().split(" ");
             int count = 10;
-            if (split.length==2) {
+            if (split.length == 2) {
                 int temp = Integer.parseInt(split[1]);
-                if (temp>0&&temp<100) {
+                if (temp > 0 && temp < 100) {
                     count = temp;
                 }
             }
@@ -106,18 +106,17 @@ public class CommandListener extends ListenerAdapter {
                         }
                     }
 
-                    // Send Plot from file in storagechannel, Send final message
-                    event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new PlotCreator().createStatstop(data), "Chart.png").queue(
-                            msg -> event.getTextChannel().sendMessage(
-                                    new EmbedBuilder()
-                                            .setTitle("Statstop")
-                                            .setDescription(sb.toString())
-                                            .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
-                                            .setImage(msg.getAttachments().get(0).getUrl())
-                                            .setTimestamp(Instant.now())
-                                            .build()
-                            ).queue()
-                    );
+                    // Send final message
+                    event.getTextChannel().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Statstop")
+                                    .setDescription(sb.toString())
+                                    .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                    .setImage("attachment://chart.png")
+                                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                    .setTimestamp(Instant.now())
+                                    .build()
+                    ).addFile(new PlotCreator().createStatstop(data), "chart.png").queue();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -133,7 +132,7 @@ public class CommandListener extends ListenerAdapter {
 
             // Get Conversation Object
             JSONArray conversations = new JSONArray(rethink.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
-            if (conversations.length()!=0) {
+            if (conversations.length() != 0) {
                 // Get Field Values
                 long connected = 0;
                 long muted = 0;
@@ -154,30 +153,29 @@ public class CommandListener extends ListenerAdapter {
 
                 long total = connected - muted - deafed - idle - sleep;
 
-                // Send Plot from file in storagechannel, Send final message
+                // Send final message
                 Member finalMember = member;
                 long finalConnected = connected;
                 long finalMuted = muted;
                 long finalIdle = idle;
                 long finalDeafed = deafed;
                 long finalSleep = sleep;
-                event.getGuild().getTextChannelById(config.getString("storagechannel")).sendFile(new PlotCreator().createStat(conversations), "Chart.png").queue(
-                        msg -> event.getTextChannel().sendMessage(
-                                new EmbedBuilder()
-                                        .setTitle("Stats")
-                                        .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
-                                        .addField("Conversations", String.valueOf(conversations.length()), true)
-                                        .addField("Time", getTime(finalConnected), true)
-                                        .addField("Muted", getTime(finalMuted), true)
-                                        .addField("Deafened", getTime(finalDeafed), true)
-                                        .addField("Idle", getTime(finalIdle), true)
-                                        .addField("Sleep", getTime(finalSleep), true)
-                                        .addField("Total", getTime(total), true)
-                                        .setImage(msg.getAttachments().get(0).getUrl())
-                                        .setTimestamp(Instant.now())
-                                        .build()
-                        ).queue()
-                );
+                event.getTextChannel().sendMessage(
+                        new EmbedBuilder()
+                                .setTitle("Stats")
+                                .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
+                                .addField("Conversations", String.valueOf(conversations.length()), true)
+                                .addField("Time", getTime(finalConnected), true)
+                                .addField("Muted", getTime(finalMuted), true)
+                                .addField("Deafened", getTime(finalDeafed), true)
+                                .addField("Idle", getTime(finalIdle), true)
+                                .addField("Sleep", getTime(finalSleep), true)
+                                .addField("Total", getTime(total), true)
+                                .setImage("attachment://chart.png")
+                                .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                .setTimestamp(Instant.now())
+                                .build()
+                ).addFile(new PlotCreator().createStat(conversations), "chart.png").queue();
             } else {
                 event.getTextChannel().sendMessage(
                         new EmbedBuilder()
