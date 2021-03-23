@@ -1,4 +1,4 @@
-package com.bbn.voiceanalyzer;
+package one.bbn.voiceanalyzer;
 
 import com.rethinkdb.RethinkDB;
 import com.rethinkdb.gen.ast.ReqlExpr;

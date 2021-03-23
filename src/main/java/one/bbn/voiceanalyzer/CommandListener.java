@@ -1,4 +1,4 @@
-package com.bbn.voiceanalyzer;
+package one.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -11,7 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.io.File;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;

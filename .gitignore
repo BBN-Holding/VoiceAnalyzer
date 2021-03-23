@@ -29,7 +29,3 @@ config.json
 VoiceAnalyzer.iml
 
 target/
-
-src/META-INF/MANIFEST.MF
-
-Chart.png

@@ -1,4 +1,4 @@
-package com.bbn.voiceanalyzer;
+package one.bbn.voiceanalyzer;
 
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;

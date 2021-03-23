@@ -1,4 +1,4 @@
-package com.bbn.voiceanalyzer;
+package one.bbn.voiceanalyzer;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
