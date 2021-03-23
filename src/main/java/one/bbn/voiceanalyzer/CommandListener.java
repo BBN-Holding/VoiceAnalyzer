@@ -52,6 +52,8 @@ public class CommandListener extends ListenerAdapter {
                             .setTitle("Help")
                             .addField("+stats", "Shows your own Voicestats", true)
                             .addField("+statstop", "Shows the Voice Leaderboard", true)
+                            .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                            .setTimestamp(Instant.now())
                             .build()).queue();
         } else if (event.getMessage().getContentRaw().startsWith("+statstop")) {
             String[] split = event.getMessage().getContentRaw().split(" ");
@@ -182,6 +184,8 @@ public class CommandListener extends ListenerAdapter {
                                 .setTitle("Error")
                                 .setColor(Color.RED)
                                 .setDescription("You don't have any stats. Join Voice!")
+                                .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                .setTimestamp(Instant.now())
                                 .build()).queue();
             }
         }
