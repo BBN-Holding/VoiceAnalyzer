@@ -60,7 +60,7 @@ public class Mongo {
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", jsonObject.getJSONArray("conversations"));
+        updateFields.append("conversations", BasicDBObject.parse("{\"a\":"+jsonObject.getJSONArray("conversations")+"}").get("a"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);
@@ -79,7 +79,7 @@ public class Mongo {
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", jsonObject.getJSONArray("conversations"));
+        updateFields.append("conversations", BasicDBObject.parse("{\"a\":"+jsonObject.getJSONArray("conversations")+"}").get("a"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);
