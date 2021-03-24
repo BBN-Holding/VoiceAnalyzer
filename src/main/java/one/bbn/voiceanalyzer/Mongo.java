@@ -74,7 +74,7 @@ public class Mongo {
         JSONArray arr = jsonObject.getJSONArray("conversations");
         arr.remove(arr.length() - 1);
         arr.put(conversation.toJson());
-        jsonObject.put("conversations", arr.toString());
+        jsonObject.put("conversations", arr);
 
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
