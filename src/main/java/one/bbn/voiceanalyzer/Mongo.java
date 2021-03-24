@@ -55,7 +55,7 @@ public class Mongo {
     public void startConversation(String userid, String guildid, String channel, String starttime) {
         JSONObject jsonObject = getMember(userid, guildid);
         JSONObject conversation = new Conversation(userid, guildid, channel, starttime).toJson();
-        jsonObject.put("conversations", jsonObject.getJSONArray("conversations").put(conversation).toString());
+        jsonObject.put("conversations", jsonObject.getJSONArray("conversations").put(conversation));
 
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
