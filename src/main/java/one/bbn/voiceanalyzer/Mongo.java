@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Mongo {
 
@@ -111,7 +112,7 @@ public class Mongo {
             }
             mutes = list.toArray(String[]::new);
         } else
-            mutes = Arrays.asList(timestamp + "-").toArray(String[]::new);
+            mutes = Collections.singletonList(timestamp + "-").toArray(String[]::new);
 
         conversation.setMuteTimes(mutes);
         setLastConversation(userid, guildid, conversation);
@@ -138,7 +139,7 @@ public class Mongo {
             }
             deafes = list.toArray(String[]::new);
         } else
-            deafes = Arrays.asList(timestamp + "-").toArray(String[]::new);
+            deafes = Collections.singletonList(timestamp + "-").toArray(String[]::new);
 
         conversation.setDeafTimes(deafes);
         setLastConversation(userid, guildid, conversation);
@@ -165,7 +166,7 @@ public class Mongo {
             }
             afk = list.toArray(String[]::new);
         } else
-            afk = Arrays.asList(timestamp + "-").toArray(String[]::new);
+            afk = Collections.singletonList(timestamp + "-").toArray(String[]::new);
 
         conversation.setIdleTimes(afk);
         setLastConversation(userid, guildid, conversation);

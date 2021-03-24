@@ -32,7 +32,7 @@ public class Conversation {
                     if (!(jsonObject.get(field.getName()) instanceof JSONArray))
                         field.set(this, jsonObject.get(field.getName()));
                     else
-                        field.set(this, jsonObject.getJSONArray(field.getName()).toList().toArray(String[]::new));
+                        field.set(this, jsonObject.getJSONArray(field.getName()).toList().toArray(Object[]::new));
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
