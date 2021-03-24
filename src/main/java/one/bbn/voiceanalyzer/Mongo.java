@@ -4,7 +4,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
-import net.dv8tion.jda.api.JDA;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,13 +22,13 @@ public class Mongo {
     }
 
     public void connect() {
-        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@"+config.getString("host")+":" + config.get("port") + "/?authSource=admin&authMechanism=MONGODB-CR");
+        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@"+config.getString("host")+":" + config.get("port") + "/?authSource=admin");
     }
 
     public void createMember(String userid, String guildid) {
         Document doc = new Document("userid", userid)
                 .append("guildid", guildid)
-                .append("conversations", "[]");
+                .append("conversations", new BasicDBList());
         client.getDatabase("VoiceAnalyzer").getCollection("members").insertOne(doc);
     }
 

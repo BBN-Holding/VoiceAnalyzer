@@ -71,7 +71,7 @@ public class CommandListener extends ListenerAdapter {
                     // Get all voice times
                     for (Member member : members) {
                         JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
-                        if (memberjson.getJSONArray("conversations").length()!=0) {
+                        if (memberjson.getJSONArray("conversations").length() != 0) {
                             JSONArray conversations = memberjson.getJSONArray("conversations");
                             long time = 0L;
                             for (int i = 0; i < conversations.length(); i++) {
@@ -88,34 +88,46 @@ public class CommandListener extends ListenerAdapter {
                             timetoid.put(time, member.getId());
                         }
                     }
-                    // Sort and reverse the list
-                    Set<Map.Entry<Long, String>> set = timetoid.entrySet();
-                    List<Map.Entry<Long, String>> list = new ArrayList<>(set);
-                    list.sort((Map.Entry.comparingByKey()));
-                    Collections.reverse(list);
+                    if (!timetoid.isEmpty()) {
+                        // Sort and reverse the list
+                        Set<Map.Entry<Long, String>> set = timetoid.entrySet();
+                        List<Map.Entry<Long, String>> list = new ArrayList<>(set);
+                        list.sort((Map.Entry.comparingByKey()));
+                        Collections.reverse(list);
 
-                    // Build outputstring, Build data object
-                    StringBuilder sb = new StringBuilder();
-                    for (Map.Entry<Long, String> entry : list) {
-                        if (list.indexOf(entry) < finalCount) {
-                            Member member = event.getGuild().getMemberById(entry.getValue());
-                            JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
-                            data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                            sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        // Build outputstring, Build data object
+                        StringBuilder sb = new StringBuilder();
+                        for (Map.Entry<Long, String> entry : list) {
+                            if (list.indexOf(entry) < finalCount) {
+                                Member member = event.getGuild().getMemberById(entry.getValue());
+                                JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
+                                data.put(memberjson.put("Tag", member.getUser().getAsTag()));
+                                sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                            }
                         }
-                    }
 
-                    // Send final message
-                    event.getTextChannel().sendMessage(
-                            new EmbedBuilder()
-                                    .setTitle("Statstop")
-                                    .setDescription(sb.toString())
-                                    .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
-                                    .setImage("attachment://chart.png")
-                                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
-                                    .setTimestamp(Instant.now())
-                                    .build()
-                    ).addFile(new PlotCreator().createStatstop(data), "chart.png").queue();
+                        // Send final message
+                        event.getTextChannel().sendMessage(
+                                new EmbedBuilder()
+                                        .setTitle("Statstop")
+                                        .setDescription(sb.toString())
+                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                        .setImage("attachment://chart.png")
+                                        .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                        .setTimestamp(Instant.now())
+                                        .build()
+                        ).addFile(new PlotCreator().createStatstop(data), "chart.png").queue();
+                    } else {
+                        event.getTextChannel().sendMessage(
+                                new EmbedBuilder()
+                                        .setTitle("Statstop")
+                                        .setDescription("There aren't any voice stats in this guild. Join a voice channel to start recording your stats.")
+                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                        .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                        .setTimestamp(Instant.now())
+                                        .setColor(Color.RED)
+                                        .build()).queue();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
