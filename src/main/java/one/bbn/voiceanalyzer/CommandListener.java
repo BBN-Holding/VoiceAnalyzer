@@ -98,7 +98,6 @@ public class CommandListener extends ListenerAdapter {
 
                     // Build outputstring, Build data object
                     StringBuilder sb = new StringBuilder();
-                    updateRoles(event, list);
                     for (Map.Entry<Long, String> entry : list) {
                         if (list.indexOf(entry) < finalCount) {
                             Member member = event.getGuild().getMemberById(entry.getValue());
@@ -187,22 +186,6 @@ public class CommandListener extends ListenerAdapter {
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                                 .setTimestamp(Instant.now())
                                 .build()).queue();
-            }
-        }
-    }
-
-    public void updateRoles(MessageReceivedEvent event, List<Map.Entry<Long, String>> list) {
-        Role role = event.getGuild().getRoleById(config.getString("TOP_ROLE"));
-        for (Map.Entry<Long, String> entry : list) {
-            Member member = event.getGuild().getMemberById(entry.getValue());
-            if (list.indexOf(entry) < 11) {
-                if (!member.getPermissions().contains(Permission.ADMINISTRATOR)) {
-                    if (!member.getRoles().contains(role)) {
-                        event.getGuild().addRoleToMember(member, role).queue();
-                    }
-                }
-            } else if (member.getRoles().contains(role)) {
-                event.getGuild().removeRoleFromMember(member, role).queue();
             }
         }
     }
