@@ -1,6 +1,5 @@
 package one.bbn.voiceanalyzer;
 
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -28,7 +27,7 @@ public class VoiceAnalyzer {
             Mongo mongo = new Mongo(config);
             mongo.connect();
 
-            JDA jda = JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
+            JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
                     .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config))
                     .setActivity(Activity.listening("Voice Channels"))
                     .build();
