@@ -48,8 +48,8 @@ public class CommandListener extends ListenerAdapter {
             event.getTextChannel().sendMessage(
                     new EmbedBuilder()
                             .setTitle("Help")
-                            .addField("+stats", "Shows your own Voicestats", true)
-                            .addField("+statstop", "Shows the Voice Leaderboard", true)
+                            .addField("+stats", "Shows your own voice stats", true)
+                            .addField("+statstop", "Shows the guild voice leaderboard", true)
                             .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                             .setTimestamp(Instant.now())
                             .build()).queue();
@@ -153,7 +153,6 @@ public class CommandListener extends ListenerAdapter {
                 long total = connected - muted - deafed - idle - sleep;
 
                 // Send final message
-                Member finalMember = member;
                 long finalConnected = connected;
                 long finalMuted = muted;
                 long finalIdle = idle;
@@ -162,7 +161,7 @@ public class CommandListener extends ListenerAdapter {
                 event.getTextChannel().sendMessage(
                         new EmbedBuilder()
                                 .setTitle("Stats")
-                                .setAuthor(finalMember.getUser().getAsTag(), finalMember.getUser().getEffectiveAvatarUrl(), finalMember.getUser().getEffectiveAvatarUrl())
+                                .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(), member.getUser().getEffectiveAvatarUrl())
                                 .addField("Conversations", String.valueOf(conversations.length()), true)
                                 .addField("Time", getTime(finalConnected), true)
                                 .addField("Muted", getTime(finalMuted), true)
@@ -180,7 +179,7 @@ public class CommandListener extends ListenerAdapter {
                         new EmbedBuilder()
                                 .setTitle("Error")
                                 .setColor(Color.RED)
-                                .setDescription("You don't have any stats. Join Voice!")
+                                .setDescription("You don't have any stats. Join a voice channel to record stats!")
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                                 .setTimestamp(Instant.now())
                                 .build()).queue();

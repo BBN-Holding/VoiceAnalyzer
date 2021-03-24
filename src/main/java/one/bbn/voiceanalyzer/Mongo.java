@@ -93,8 +93,6 @@ public class Mongo {
             setUnmuted(userid, guildid, timestamp);
         if (conversation.getIdleTimes() != null && conversation.getIdleTimes().length > 0 && conversation.getIdleTimes()[conversation.getIdleTimes().length - 1].endsWith("-"))
             setOnline(userid, guildid, timestamp);
-        if (conversation.getSleepTimes() != null && conversation.getSleepTimes().length > 0 && conversation.getSleepTimes()[conversation.getSleepTimes().length - 1].endsWith("-"))
-            setAwake(userid, guildid, timestamp);
         conversation = new Conversation(getLastConversation(userid, guildid));
         conversation.setEndTime(timestamp);
         setLastConversation(userid, guildid, conversation);
@@ -176,33 +174,6 @@ public class Mongo {
         if (conversation.getIdleTimes() != null) {
             if (conversation.getIdleTimes()[conversation.getIdleTimes().length - 1].endsWith("-")) {
                 conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] = conversation.getIdleTimes()[conversation.getIdleTimes().length - 1] + timestamp;
-                setLastConversation(userid, guildid, conversation);
-            }
-        }
-    }
-
-    public void setSleep(String userid, String guildid, String timestamp) {
-        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-
-        String[] sleep;
-        if (conversation.getSleepTimes() != null) {
-            ArrayList<String> list = new ArrayList<>(Arrays.asList(conversation.getSleepTimes()));
-            if (!conversation.getSleepTimes()[conversation.getSleepTimes().length - 1].endsWith("-")) {
-                list.add(timestamp + "-");
-            }
-            sleep = list.toArray(String[]::new);
-        } else {
-            sleep = Arrays.asList(timestamp + "-").toArray(String[]::new);
-        }
-        conversation.setSleepTimes(sleep);
-        setLastConversation(userid, guildid, conversation);
-    }
-
-    public void setAwake(String userid, String guildid, String timestamp) {
-        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
-        if (conversation.getSleepTimes() != null) {
-            if (conversation.getSleepTimes()[conversation.getSleepTimes().length - 1].endsWith("-")) {
-                conversation.getSleepTimes()[conversation.getSleepTimes().length - 1] = conversation.getSleepTimes()[conversation.getSleepTimes().length - 1] + timestamp;
                 setLastConversation(userid, guildid, conversation);
             }
         }
