@@ -22,7 +22,7 @@ public class Mongo {
     }
 
     public void connect() {
-        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@"+config.getString("host")+":" + config.get("port") + "/?authSource=admin");
+        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@" + config.getString("host") + ":" + config.get("port") + "/?authSource=admin");
     }
 
     public void createMember(String userid, String guildid) {
@@ -60,7 +60,7 @@ public class Mongo {
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", BasicDBObject.parse("{\"a\":"+jsonObject.getJSONArray("conversations")+"}").get("a"));
+        updateFields.append("conversations", BasicDBObject.parse("{\"a\":" + jsonObject.getJSONArray("conversations") + "}").get("a"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);
@@ -79,7 +79,7 @@ public class Mongo {
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", BasicDBObject.parse("{\"a\":"+jsonObject.getJSONArray("conversations")+"}").get("a"));
+        updateFields.append("conversations", BasicDBObject.parse("{\"a\":" + jsonObject.getJSONArray("conversations") + "}").get("a"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);

@@ -138,7 +138,20 @@ public class CommandListener extends ListenerAdapter {
             if (event.getMessage().getMentionedMembers().size() == 1)
                 member = event.getMessage().getMentionedMembers().get(0);
             else if (event.getMessage().getContentRaw().split(" ").length == 2) {
-                member = event.getGuild().getMemberById(event.getMessage().getContentRaw().split(" ")[1]);
+                try {
+                    member = Objects.requireNonNull(event.getGuild().getMemberById(event.getMessage().getContentRaw().split(" ")[1]));
+                } catch (Exception e) {
+                    event.getTextChannel().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Statstop")
+                                    .setDescription("I am not able to find the specified user.")
+                                    .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                    .setTimestamp(Instant.now())
+                                    .setColor(Color.RED)
+                                    .build()).queue();
+                    return;
+                }
             }
 
             // Get Conversation Object
@@ -191,7 +204,7 @@ public class CommandListener extends ListenerAdapter {
                         new EmbedBuilder()
                                 .setTitle("Error")
                                 .setColor(Color.RED)
-                                .setDescription("You don't have any stats. Join a voice channel to record stats!")
+                                .setDescription("There aren't any stats available at the moment. Please check back later.")
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                                 .setTimestamp(Instant.now())
                                 .build()).queue();
