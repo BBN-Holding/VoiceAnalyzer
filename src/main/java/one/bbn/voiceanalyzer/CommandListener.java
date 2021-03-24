@@ -17,11 +17,11 @@ import java.util.List;
 
 public class CommandListener extends ListenerAdapter {
 
-    Rethink rethink;
+    Mongo mongo;
     JSONObject config;
 
-    public CommandListener(Rethink rethink, JSONObject config) {
-        this.rethink = rethink;
+    public CommandListener(Mongo mongo, JSONObject config) {
+        this.mongo = mongo;
         this.config = config;
     }
 
@@ -72,7 +72,7 @@ public class CommandListener extends ListenerAdapter {
 
                     // Get all voice times
                     for (Member member : members) {
-                        JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
+                        JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
                         if (!memberjson.getString("conversations").equals("[]")) {
                             JSONArray conversations = new JSONArray(memberjson.getString("conversations"));
                             long time = 0L;
@@ -102,7 +102,7 @@ public class CommandListener extends ListenerAdapter {
                     for (Map.Entry<Long, String> entry : list) {
                         if (list.indexOf(entry) < finalCount) {
                             Member member = event.getGuild().getMemberById(entry.getValue());
-                            JSONObject memberjson = rethink.getMember(member.getId(), member.getGuild().getId());
+                            JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
                             data.put(memberjson.put("Tag", member.getUser().getAsTag()));
                             sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
                         }
@@ -133,7 +133,7 @@ public class CommandListener extends ListenerAdapter {
             }
 
             // Get Conversation Object
-            JSONArray conversations = new JSONArray(rethink.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
+            JSONArray conversations = new JSONArray(mongo.getMember(member.getId(), event.getGuild().getId()).getString("conversations"));
             if (conversations.length() != 0) {
                 // Get Field Values
                 long connected = 0;

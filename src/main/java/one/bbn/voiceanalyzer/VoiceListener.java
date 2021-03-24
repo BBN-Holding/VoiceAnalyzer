@@ -15,11 +15,11 @@ import java.util.TimerTask;
 
 public class VoiceListener extends ListenerAdapter {
 
-    Rethink rethink;
+    Mongo mongo;
     JSONObject config;
 
-    public VoiceListener(Rethink rethink, JSONObject config) {
-        this.rethink = rethink;
+    public VoiceListener(Mongo mongo, JSONObject config) {
+        this.mongo = mongo;
         this.config = config;
     }
 
@@ -27,41 +27,41 @@ public class VoiceListener extends ListenerAdapter {
     public void onVoiceChannelUpdateName(@NotNull VoiceChannelUpdateNameEvent event) {
         if (!event.getOldName().endsWith(" - Sleep") && event.getNewName().endsWith(" - Sleep")) {
             for (Member member : event.getChannel().getMembers()) {
-                rethink.setSleep(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                mongo.setSleep(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
             }
         }
         if (event.getOldName().endsWith(" - Sleep") && !event.getNewName().endsWith(" - Sleep")) {
             for (Member member : event.getChannel().getMembers()) {
-                rethink.setAwake(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                mongo.setAwake(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
             }
         }
     }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        rethink.getMember(event.getAuthor().getId(), event.getGuild().getId());
+        mongo.getMember(event.getAuthor().getId(), event.getGuild().getId());
     }
 
     @Override
     public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
         // Start conversation
-        rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
+        mongo.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
         if (event.getChannelJoined().getMembers().size() == 2) {
             for (Member member : event.getChannelJoined().getMembers()) {
-                rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                mongo.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
             }
         }
         if (event.getChannelJoined().getMembers().size() == 1) {
-            rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            mongo.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
     }
 
     @Override
     public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         // Stop conversation => Conversation Time, Members in Conversation
-        rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        mongo.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         if (event.getChannelLeft().getMembers().size() == 1) {
-            rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            mongo.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
     }
 
@@ -72,9 +72,9 @@ public class VoiceListener extends ListenerAdapter {
             @Override
             public void run() {
                 if (event.isMuted()) {
-                    rethink.setMuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    mongo.setMuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 } else {
-                    rethink.setUnmuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    mongo.setUnmuted(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 }
             }
         }, 2500);
@@ -87,9 +87,9 @@ public class VoiceListener extends ListenerAdapter {
             @Override
             public void run() {
                 if (event.isDeafened()) {
-                    rethink.setDeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    mongo.setDeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 } else {
-                    rethink.setUndeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    mongo.setUndeafed(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 }
             }
         }, 1000);
@@ -98,21 +98,21 @@ public class VoiceListener extends ListenerAdapter {
     @Override
     public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
         // Stop and Start the conversation
-        rethink.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+        mongo.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         if (event.getChannelLeft().getMembers().size() == 1) {
-            rethink.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+            mongo.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
         }
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                rethink.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
+                mongo.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
                 if (event.getChannelJoined().getMembers().size() == 2) {
                     for (Member member : event.getChannelJoined().getMembers()) {
-                        rethink.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                        mongo.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                     }
                 } else if (event.getChannelJoined().getMembers().size() == 1) {
-                    rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                    mongo.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                 }
             }
         }, 1000);
@@ -126,10 +126,10 @@ public class VoiceListener extends ListenerAdapter {
                 if (event.getMember().getVoiceState().getChannel().getMembers().size() != 1) {
                     if (event.getNewOnlineStatus().equals(OnlineStatus.IDLE)) {
                         // Start afk
-                        rethink.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                        mongo.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                     } else if (event.getNewOnlineStatus().equals(OnlineStatus.ONLINE)) {
                         // Stop afk
-                        rethink.setOnline(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
+                        mongo.setOnline(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
                     }
                 }
             }

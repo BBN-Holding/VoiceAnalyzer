@@ -23,11 +23,12 @@ public class VoiceAnalyzer {
             }
 
             JSONObject config = new JSONObject(new String(Files.readAllBytes(new File("config.json").toPath())));
-            Rethink rethink = new Rethink();
-            rethink.connect();
+
+            Mongo mongo = new Mongo(config);
+            mongo.connect();
 
             JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
-                    .addEventListeners(new VoiceListener(rethink, config), new CommandListener(rethink, config))
+                    .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config))
                     .setActivity(Activity.listening("Voice Channels"))
                     .build();
 

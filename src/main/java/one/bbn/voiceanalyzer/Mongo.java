@@ -1,52 +1,48 @@
 package one.bbn.voiceanalyzer;
 
-import com.rethinkdb.RethinkDB;
-import com.rethinkdb.gen.ast.ReqlExpr;
-import com.rethinkdb.gen.exc.ReqlOpFailedError;
-import com.rethinkdb.net.Connection;
-import com.rethinkdb.net.Result;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Rethink {
+public class Mongo {
 
-    public static final RethinkDB r = RethinkDB.r;
+    MongoClient client;
+    JSONObject config;
 
-    Connection conn;
-
-
-    public void connect() {
-        conn = r.connection().db("VCA").hostname("localhost").port(28015).connect();
-        createTables();
+    public Mongo(JSONObject config) {
+        this.config = config;
     }
 
-    public void createTables() {
-        try {
-            r.dbCreate("VCA").run(conn);
-            r.tableCreate("members").run(conn);
-        } catch (ReqlOpFailedError error) {
-            System.out.println(error.getMessage());
-        }
+    public void connect() {
+        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@localhost:" + config.get("port") + "/?authSource=admin&authMechanism=MONGODB-CR");
     }
 
     public void createMember(String userid, String guildid) {
-        r.table("members").insert(r.hashMap("userid", userid).with("guildid", guildid).with("conversations", "[]")).run(conn);
+        Document doc = new Document("userid", userid)
+                .append("guildid", guildid)
+                .append("conversations", "[]");
+        client.getDatabase("VoiceAnalyzer").getCollection("members").insertOne(doc);
     }
 
     public JSONObject getMember(String userid, String guildid) {
-        Result result = r.table("members").filter(row -> row.getField("userid").eq(userid)).map(ReqlExpr::toJson).run(conn);
-        if (!result.hasNext()) {
+
+        MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
+
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("userid", userid);
+        FindIterable<Document> it = collection.find(whereQuery);
+        if (it.cursor().hasNext()) {
+            return new JSONObject(it.cursor().next().toJson());
+        } else {
             createMember(userid, guildid);
             return getMember(userid, guildid);
-        } else {
-            for (Object doc : result) {
-                return new JSONObject(String.valueOf(doc));
-            }
         }
-        return null;
     }
 
     public JSONObject getLastConversation(String userid, String guildid) {
@@ -58,10 +54,17 @@ public class Rethink {
         JSONObject jsonObject = getMember(userid, guildid);
         JSONObject conversation = new Conversation(userid, guildid, channel, starttime).toJson();
         jsonObject.put("conversations", new JSONArray(jsonObject.getString("conversations")).put(conversation).toString());
-        r.table("members")
-                .get(jsonObject.getString("id"))
-                .update(r.hashMap("conversations", jsonObject.getString("conversations")))
-                .optArg("non_atomic", true).run(conn);
+
+        MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
+
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("conversations", jsonObject.getString("conversations"));
+
+        BasicDBObject updateObject = new BasicDBObject();
+        updateObject.put("$set", updateFields);
+
+        collection.updateOne(Filters.eq("userid", userid), updateObject);
+
     }
 
     public void setLastConversation(String userid, String guildid, Conversation conversation) {
@@ -70,10 +73,16 @@ public class Rethink {
         arr.remove(arr.length() - 1);
         arr.put(conversation.toJson());
         jsonObject.put("conversations", arr.toString());
-        r.table("members")
-                .get(jsonObject.getString("id"))
-                .update(r.hashMap("conversations", jsonObject.getString("conversations")))
-                .optArg("non_atomic", true).run(conn);
+
+        MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
+
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("conversations", jsonObject.getString("conversations"));
+
+        BasicDBObject updateObject = new BasicDBObject();
+        updateObject.put("$set", updateFields);
+
+        collection.updateOne(Filters.eq("userid", userid), updateObject);
     }
 
     public void stopConversation(String userid, String guildid, String timestamp) {
@@ -199,3 +208,4 @@ public class Rethink {
         }
     }
 }
+
