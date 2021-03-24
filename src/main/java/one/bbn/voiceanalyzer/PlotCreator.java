@@ -57,7 +57,7 @@ public class PlotCreator {
         long highestsum = 0;
         for (Object memberobj : data) {
             JSONObject member = (JSONObject) memberobj;
-            JSONArray conversations = new JSONArray(member.getString("conversations"));
+            JSONArray conversations = member.getJSONArray("conversations");
             long sum = 0;
             for (int i = 0; i < conversations.length(); i++) {
                 JSONObject conversationobj = conversations.getJSONObject(i);
@@ -76,7 +76,7 @@ public class PlotCreator {
         long totaltime = higheststarttime - loweststarttime;
         for (Object memberobj : data) {
             JSONObject member = (JSONObject) memberobj;
-            JSONArray conversations = new JSONArray(member.getString("conversations"));
+            JSONArray conversations = member.getJSONArray("conversations");
             ArrayList<Double> starttimes = new ArrayList<>();
             ArrayList<Double> sums = new ArrayList<>();
             long sum = 0;

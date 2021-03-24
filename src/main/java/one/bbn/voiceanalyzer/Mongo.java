@@ -1,8 +1,10 @@
 package one.bbn.voiceanalyzer;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import net.dv8tion.jda.api.JDA;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,7 +22,7 @@ public class Mongo {
     }
 
     public void connect() {
-        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@localhost:" + config.get("port") + "/?authSource=admin&authMechanism=MONGODB-CR");
+        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@"+config.getString("host")+":" + config.get("port") + "/?authSource=admin&authMechanism=MONGODB-CR");
     }
 
     public void createMember(String userid, String guildid) {
@@ -46,19 +48,19 @@ public class Mongo {
     }
 
     public JSONObject getLastConversation(String userid, String guildid) {
-        JSONArray arr = new JSONArray(getMember(userid, guildid).getString("conversations"));
+        JSONArray arr = getMember(userid, guildid).getJSONArray("conversations");
         return arr.getJSONObject(arr.length() - 1);
     }
 
     public void startConversation(String userid, String guildid, String channel, String starttime) {
         JSONObject jsonObject = getMember(userid, guildid);
         JSONObject conversation = new Conversation(userid, guildid, channel, starttime).toJson();
-        jsonObject.put("conversations", new JSONArray(jsonObject.getString("conversations")).put(conversation).toString());
+        jsonObject.put("conversations", jsonObject.getJSONArray("conversations").put(conversation).toString());
 
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", jsonObject.getString("conversations"));
+        updateFields.append("conversations", jsonObject.getJSONArray("conversations"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);
@@ -69,7 +71,7 @@ public class Mongo {
 
     public void setLastConversation(String userid, String guildid, Conversation conversation) {
         JSONObject jsonObject = getMember(userid, guildid);
-        JSONArray arr = new JSONArray(jsonObject.getString("conversations"));
+        JSONArray arr = jsonObject.getJSONArray("conversations");
         arr.remove(arr.length() - 1);
         arr.put(conversation.toJson());
         jsonObject.put("conversations", arr.toString());
@@ -77,7 +79,7 @@ public class Mongo {
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("conversations", jsonObject.getString("conversations"));
+        updateFields.append("conversations", jsonObject.getJSONArray("conversations"));
 
         BasicDBObject updateObject = new BasicDBObject();
         updateObject.put("$set", updateFields);
