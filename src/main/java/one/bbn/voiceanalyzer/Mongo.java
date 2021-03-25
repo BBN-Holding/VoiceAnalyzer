@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class Mongo {
 
@@ -33,9 +34,7 @@ public class Mongo {
     }
 
     public JSONObject getMember(String userid, String guildid) {
-
         MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
-
         BasicDBObject whereQuery = new BasicDBObject();
         whereQuery.put("userid", userid);
         FindIterable<Document> it = collection.find(whereQuery);
@@ -45,6 +44,20 @@ public class Mongo {
             createMember(userid, guildid);
             return getMember(userid, guildid);
         }
+    }
+
+    public List<JSONObject> getMembers(String guildid) {
+        MongoCollection<Document> collection = client.getDatabase("VoiceAnalyzer").getCollection("members");
+        BasicDBObject whereQuery = new BasicDBObject();
+        whereQuery.put("guildid", guildid);
+
+        List<JSONObject> members = new ArrayList<>();
+        FindIterable<Document> it = collection.find(whereQuery);
+
+        for (Document member : it) {
+            if (member != null) members.add(new JSONObject(member.toJson()));
+        }
+        return members;
     }
 
     public JSONObject getLastConversation(String userid, String guildid) {
