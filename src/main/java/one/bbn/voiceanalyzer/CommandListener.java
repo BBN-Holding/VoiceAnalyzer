@@ -71,8 +71,8 @@ public class CommandListener extends ListenerAdapter {
 
                 // Get all voice times
                 for (JSONObject member : members) {
-                    if (member.getJSONObject("conversations").length() != 0) {
-                        JSONObject conversations = member.getJSONObject("conversations");
+                    if (member.getJSONArray("conversations").length() != 0) {
+                        JSONArray conversations = member.getJSONArray("conversations");
                         long time = 0L;
                         for (int i = 0; i < conversations.length(); i++) {
                             JSONObject conversationobj = conversations.getJSONObject(i);
@@ -154,7 +154,7 @@ public class CommandListener extends ListenerAdapter {
             }
 
             // Get Conversation Object
-            JSONArray conversations = new JSONArray(mongo.getMember(member.getId(), event.getGuild().getId()).getJSONObject("conversations"));
+            JSONArray conversations = new JSONArray(mongo.getMember(member.getId(), event.getGuild().getId()).getJSONArray("conversations"));
             if (conversations.length() != 0) {
                 // Get Field Values
                 long connected = 0;
