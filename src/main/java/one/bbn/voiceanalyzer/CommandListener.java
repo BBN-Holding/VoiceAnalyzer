@@ -63,75 +63,74 @@ public class CommandListener extends ListenerAdapter {
                 }
             }
             int finalCount = count;
-            event.getGuild().loadMembers().onSuccess(members -> {
-                try {
-                    JSONArray data = new JSONArray();
-                    HashMap<Long, String> timetoid = new HashMap<>();
 
-                    // Get all voice times
-                    for (Member member : members) {
-                        JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
-                        if (memberjson.getJSONArray("conversations").length() != 0) {
-                            JSONArray conversations = memberjson.getJSONArray("conversations");
-                            long time = 0L;
-                            for (int i = 0; i < conversations.length(); i++) {
-                                JSONObject conversationobj = conversations.getJSONObject(i);
-                                Conversation conversation = new Conversation(conversationobj);
-                                if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
-                                    time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
-                                    time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
-                                    time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                                    time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
-                                    time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
-                                }
-                            }
-                            timetoid.put(time, member.getId());
-                        }
-                    }
-                    if (!timetoid.isEmpty()) {
-                        // Sort and reverse the list
-                        Set<Map.Entry<Long, String>> set = timetoid.entrySet();
-                        List<Map.Entry<Long, String>> list = new ArrayList<>(set);
-                        list.sort((Map.Entry.comparingByKey()));
-                        Collections.reverse(list);
+            try {
+                JSONArray data = new JSONArray();
+                HashMap<Long, String> timetoid = new HashMap<>();
+                List<JSONObject> members = mongo.getMembers(event.getGuild().getId());
 
-                        // Build outputstring, Build data object
-                        StringBuilder sb = new StringBuilder();
-                        for (Map.Entry<Long, String> entry : list) {
-                            if (list.indexOf(entry) < finalCount) {
-                                Member member = event.getGuild().getMemberById(entry.getValue());
-                                JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
-                                data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                                sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                // Get all voice times
+                for (JSONObject member : members) {
+                    if (member.getJSONArray("conversations").length() != 0) {
+                        JSONArray conversations = member.getJSONArray("conversations");
+                        long time = 0L;
+                        for (int i = 0; i < conversations.length(); i++) {
+                            JSONObject conversationobj = conversations.getJSONObject(i);
+                            Conversation conversation = new Conversation(conversationobj);
+                            if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
+                                time += (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                                time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
+                                time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
+                                time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
+                                time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
                             }
                         }
-
-                        // Send final message
-                        event.getTextChannel().sendMessage(
-                                new EmbedBuilder()
-                                        .setTitle("Statstop")
-                                        .setDescription(sb.toString())
-                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
-                                        .setImage("attachment://chart.png")
-                                        .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
-                                        .setTimestamp(Instant.now())
-                                        .build()
-                        ).addFile(new PlotCreator().createStatstop(data), "chart.png").queue();
-                    } else {
-                        event.getTextChannel().sendMessage(
-                                new EmbedBuilder()
-                                        .setTitle("Statstop")
-                                        .setDescription("There aren't any voice stats in this guild. Join a voice channel to start recording your stats.")
-                                        .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
-                                        .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
-                                        .setTimestamp(Instant.now())
-                                        .setColor(Color.RED)
-                                        .build()).queue();
+                        timetoid.put(time, member.getString("userid"));
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            });
+                if (!timetoid.isEmpty()) {
+                    // Sort and reverse the list
+                    Set<Map.Entry<Long, String>> set = timetoid.entrySet();
+                    List<Map.Entry<Long, String>> list = new ArrayList<>(set);
+                    list.sort((Map.Entry.comparingByKey()));
+                    Collections.reverse(list);
+
+                    // Build outputstring, Build data object
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<Long, String> entry : list) {
+                        if (list.indexOf(entry) < finalCount) {
+                            Member member = event.getGuild().getMemberById(entry.getValue());
+                            JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
+                            data.put(memberjson.put("Tag", member.getUser().getAsTag()));
+                            sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                        }
+                    }
+
+                    // Send final message
+                    event.getTextChannel().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Statstop")
+                                    .setDescription(sb.toString())
+                                    .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                    .setImage("attachment://chart.png")
+                                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                    .setTimestamp(Instant.now())
+                                    .build()
+                    ).addFile(new PlotCreator().createStatstop(data), "chart.png").queue();
+                } else {
+                    event.getTextChannel().sendMessage(
+                            new EmbedBuilder()
+                                    .setTitle("Statstop")
+                                    .setDescription("There aren't any voice stats in this guild. Join a voice channel to start recording your stats.")
+                                    .setAuthor(event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl(), event.getAuthor().getEffectiveAvatarUrl())
+                                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                                    .setTimestamp(Instant.now())
+                                    .setColor(Color.RED)
+                                    .build()).queue();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else if (event.getMessage().getContentRaw().startsWith("+stats")) {
             // Get Member
             Member member = event.getMember();
