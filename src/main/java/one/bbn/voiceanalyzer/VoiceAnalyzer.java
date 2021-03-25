@@ -27,7 +27,7 @@ public class VoiceAnalyzer {
             Mongo mongo = new Mongo(config);
             mongo.connect();
 
-            JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
+            JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(640))
                     .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config))
                     .setActivity(Activity.listening("Voice Channels"))
                     .build();

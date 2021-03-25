@@ -99,8 +99,8 @@ public class CommandListener extends ListenerAdapter {
                     StringBuilder sb = new StringBuilder();
                     for (Map.Entry<Long, String> entry : list) {
                         if (list.indexOf(entry) < finalCount) {
-                            Member member = event.getGuild().getMemberById(entry.getValue());
-                            JSONObject memberjson = mongo.getMember(member.getId(), member.getGuild().getId());
+                            Member member = event.getGuild().retrieveMemberById(entry.getValue()).complete();
+                            JSONObject memberjson = mongo.getMember(entry.getValue(), member.getGuild().getId());
                             data.put(memberjson.put("Tag", member.getUser().getAsTag()));
                             sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
                         }
