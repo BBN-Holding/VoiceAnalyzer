@@ -44,6 +44,8 @@ public class CommandListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        if (event.getMessage().getAuthor().isBot())
+            return;
         if (event.getMessage().getContentRaw().equals("+help")) {
             event.getTextChannel().sendMessage(
                     new EmbedBuilder()
