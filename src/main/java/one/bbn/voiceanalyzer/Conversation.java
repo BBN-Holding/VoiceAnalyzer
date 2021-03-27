@@ -15,7 +15,6 @@ public class Conversation {
     private String[] muteTimes;
     private String[] deafTimes;
     private String[] idleTimes;
-    private String[] sleepTimes;
 
     public Conversation(String userid, String guildID, String voiceChannel, String startTime) {
         this.userID = userid;
@@ -88,11 +87,4 @@ public class Conversation {
         this.idleTimes = idleTimes;
     }
 
-    public String[] getSleepTimes() {
-        return sleepTimes;
-    }
-
-    public void setSleepTimes(String[] sleepTimes) {
-        this.sleepTimes = sleepTimes;
-    }
 }

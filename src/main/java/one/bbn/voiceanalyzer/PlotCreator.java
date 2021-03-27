@@ -96,7 +96,6 @@ public class PlotCreator {
 
                     long talktime = Long.parseLong(conversation.getEndTime())
                             - Long.parseLong(conversation.getStartTime())
-                            - getSum(conversation.getSleepTimes(), conversation.getEndTime())
                             - getSum(conversation.getMuteTimes(), conversation.getEndTime())
                             - getSum(conversation.getDeafTimes(), conversation.getEndTime())
                             - getSum(conversation.getIdleTimes(), conversation.getEndTime());

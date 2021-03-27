@@ -84,7 +84,6 @@ public class CommandListener extends ListenerAdapter {
                                 time -= getSum(conversation.getMuteTimes(), conversation.getEndTime());
                                 time -= getSum(conversation.getIdleTimes(), conversation.getEndTime());
                                 time -= getSum(conversation.getDeafTimes(), conversation.getEndTime());
-                                time -= getSum(conversation.getSleepTimes(), conversation.getEndTime());
                             }
                         }
                         timetoid.put(time, member.getString("userid"));
@@ -172,18 +171,16 @@ public class CommandListener extends ListenerAdapter {
                         muted += getSum(conversation.getMuteTimes(), conversation.getEndTime());
                         deafed += getSum(conversation.getDeafTimes(), conversation.getEndTime());
                         idle += getSum(conversation.getIdleTimes(), conversation.getEndTime());
-                        sleep += getSum(conversation.getSleepTimes(), conversation.getEndTime());
                     }
                 }
 
-                long total = connected - muted - deafed - idle - sleep;
+                long total = connected - muted - deafed - idle;
 
                 // Send final message
                 long finalConnected = connected;
                 long finalMuted = muted;
                 long finalIdle = idle;
                 long finalDeafed = deafed;
-                long finalSleep = sleep;
                 event.getTextChannel().sendMessage(
                         new EmbedBuilder()
                                 .setTitle("Stats")
@@ -193,7 +190,6 @@ public class CommandListener extends ListenerAdapter {
                                 .addField("Muted", getTime(finalMuted), true)
                                 .addField("Deafened", getTime(finalDeafed), true)
                                 .addField("Idle", getTime(finalIdle), true)
-                                .addField("Sleep", getTime(finalSleep), true)
                                 .addField("Total", getTime(total), true)
                                 .setImage("attachment://chart.png")
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")

@@ -3,6 +3,7 @@ package one.bbn.voiceanalyzer;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
@@ -30,6 +31,7 @@ public class VoiceAnalyzer {
             JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(640))
                     .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config))
                     .setActivity(Activity.listening("Voice Channels"))
+                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS)
                     .build();
 
         } catch (IOException | LoginException e) {
