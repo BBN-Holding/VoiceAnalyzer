@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation ('net.dv8tion:JDA:4.2.0_247') {
+    implementation('net.dv8tion:JDA:4.2.0_247') {
         exclude module: 'opus-java'
     }
     implementation 'org.mongodb:mongodb-driver-sync:4.2.2'
@@ -22,14 +22,11 @@ dependencies {
 
 }
 
-def mainClassName = "one.bbn.voiceanalyzer.VoiceAnalyzer"
-
-jar {
+task fatJar(type: Jar) {
     manifest {
-        attributes "Main-Class": "$mainClassName"
+        attributes 'Main-Class': 'one.bbn.voiceanalyzer.VoiceAnalyzer'
     }
-
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    archiveBaseName = 'VoiceAnalyzer'
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
