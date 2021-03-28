@@ -5,7 +5,6 @@ plugins {
 group 'one.bbn'
 version '1.0'
 apply plugin: 'java'
-project.buildDir = '/target'
 
 repositories {
     mavenCentral()
