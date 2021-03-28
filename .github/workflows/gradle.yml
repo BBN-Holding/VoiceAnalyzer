@@ -25,11 +25,11 @@ jobs:
         with:
           java-version: '15'
       - name: Build Final Jar
-        run: gradle fatJar
+        run: gradle shadowJar
       - name: Copy folder content recursively to remote
         uses: garygrossgarten/github-action-scp@v0.7.3
         with:
-          local: ./build/libs/VoiceAnalyzer-2.0.jar
+          local: ./build/libs/VoiceAnalyzer.jar
           remote: /root/bots/VoiceAnalyzer/VoiceAnalyzer-Build.jar
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
