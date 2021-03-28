@@ -20,7 +20,7 @@ dependencies {
 
 }
 
-mainClassName = "one.bbn.voiceanalyzer.VoiceAnalyzer"
+def mainClassName = "one.bbn.voiceanalyzer.VoiceAnalyzer"
 
 jar {
     manifest {
