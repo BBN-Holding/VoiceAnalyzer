@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'one.bbn'
+version '1.0'
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation 'net.dv8tion:JDA:4.2.0_247'
+    implementation 'org.mongodb:mongodb-driver-sync:4.2.2'
+    implementation 'org.json:json:20210307'
+    implementation 'org.knowm.xchart:xchart:3.8.0'
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
+
+}
+
+test {
+    useJUnitPlatform()
+}

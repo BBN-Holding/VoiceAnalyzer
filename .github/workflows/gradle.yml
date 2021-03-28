@@ -1,6 +1,6 @@
 name: VoiceAnalyzer
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -11,8 +11,8 @@ jobs:
         uses: actions/setup-java@v1.4.3
         with:
           java-version: '15'
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      - name: Build with Gradle
+        run: ./gradlew build
 
   deploy:
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
         with:
           java-version: '15'
       - name: Build Final Jar
-        run:  mvn clean compile assembly:single
+        run: gradle build
       - name: Copy folder content recursively to remote
         uses: garygrossgarten/github-action-scp@v0.7.3
         with:
