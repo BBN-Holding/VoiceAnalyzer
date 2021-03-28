@@ -12,7 +12,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.dv8tion:JDA:4.2.0_247'
+    implementation ('net.dv8tion:JDA:4.2.0_247') {
+        exclude module: 'opus-java'
+    }
     implementation 'org.mongodb:mongodb-driver-sync:4.2.2'
     implementation 'org.json:json:20210307'
     implementation 'org.knowm.xchart:xchart:3.8.0'
