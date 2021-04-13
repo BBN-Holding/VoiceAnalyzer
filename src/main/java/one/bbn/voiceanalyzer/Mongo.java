@@ -23,7 +23,7 @@ public class Mongo {
     }
 
     public void connect() {
-        client = MongoClients.create("mongodb://" + config.getString("username") + ":" + config.getString("password") + "@" + config.getString("host") + ":" + config.get("port") + "/?authSource=admin");
+        client = MongoClients.create("mongodb://" + config.getString("host") + ":" + config.get("port") + "/?authSource=admin");
     }
 
     public void createMember(String userid, String guildid) {

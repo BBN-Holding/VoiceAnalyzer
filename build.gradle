@@ -8,7 +8,6 @@ version '2.0'
 apply plugin: 'java'
 
 repositories {
-    mavenCentral()
     jcenter()
 }
 

@@ -24,11 +24,11 @@ public class CommandListener extends ListenerAdapter {
     }
 
     public String getTime(Long ms) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        calendar.setTimeInMillis(ms);
-        return String.format("%02d Days %02d:%02d:%02d",
-                calendar.get(Calendar.DAY_OF_MONTH) - 1, calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+        long seconds = ms / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+        return days + " Days " + hours % 24 + ":" + minutes % 60 + ":" + seconds % 60;
     }
 
     public long getSum(String[] data, String endtime) {
