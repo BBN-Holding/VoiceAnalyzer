@@ -279,37 +279,6 @@ public class CommandListener extends ListenerAdapter {
                     .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                     .setTimestamp(Instant.now())
                     .build()).queue();
-        } else if (event.getMessage().getContentRaw().equals("+today")) {
-            List<JSONObject> members = mongo.getMembers(event.getGuild().getId());
-            StringBuilder sb = new StringBuilder();
-            Calendar reference = Calendar.getInstance();
-            reference.set(Calendar.HOUR, 0);
-            reference.set(Calendar.MINUTE, 0);
-            reference.set(Calendar.SECOND, 0);
-            for (JSONObject member : members) {
-                if (member.getJSONArray("conversations").length() != 0) {
-                    JSONArray conversations = member.getJSONArray("conversations");
-                    for (int i = 0; i<conversations.length(); i++) {
-                        Conversation conversation = new Conversation(conversations.getJSONObject(i));
-                        if (Long.parseLong(conversation.getEndTime()) > reference.getTimeInMillis()) {
-                            Member memberobj = event.getGuild().retrieveMemberById(member.getString("userid")).complete();
-                            long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                            sb.append("%s - %s (%s - %s)\n".formatted(memberobj.getUser().getAsTag(),
-                                    getTime(time, (time >= 86400000)),
-                                    format.format(new Date(Long.parseLong(conversation.getStartTime()))),
-                                    format.format(new Date(Long.parseLong(conversation.getEndTime())))));
-                        }
-                    }
-                }
-            }
-            event.getTextChannel().sendMessage(new EmbedBuilder()
-                    .setTitle("Stats - Today")
-                    .setAuthor(event.getMember().getUser().getAsTag(), event.getMember().getUser().getEffectiveAvatarUrl(), event.getMember().getUser().getEffectiveAvatarUrl())
-                    .setDescription(sb.toString())
-                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
-                    .setTimestamp(Instant.now())
-                    .build()).queue();
         }
     }
 }
