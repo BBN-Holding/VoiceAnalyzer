@@ -30,9 +30,7 @@ public class Conversation {
         try {
             for (Field field : c.getDeclaredFields()) {
                 if (jsonObject.has(field.getName()))
-                    if (!(jsonObject.get(field.getName()) instanceof JSONArray))
-                        field.set(this, jsonObject.get(field.getName()));
-                    else if (field.getName().equals("voiceChannel")) {
+                    if (field.getName().equals("voiceChannel")) {
                         String[] data;
                         if (jsonObject.get(field.getName()) instanceof String) {
                             data = Arrays.asList(jsonObject.get(field.getName())).toArray(String[]::new);
@@ -41,6 +39,8 @@ public class Conversation {
                         }
                         field.set(this, data);
                     }
+                    else if (!(jsonObject.get(field.getName()) instanceof JSONArray))
+                        field.set(this, jsonObject.get(field.getName()));
                     else
                         field.set(this, jsonObject.getJSONArray(field.getName()).toList().toArray(String[]::new));
             }
