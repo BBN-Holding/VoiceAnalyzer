@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,11 +27,15 @@ public class CommandListener extends ListenerAdapter {
     }
 
     public String getTime(Long ms, boolean withDays) {
+        DecimalFormat format = new DecimalFormat("00");
         long seconds = ms / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
         long days = hours / 24;
-        return (withDays ? days + " Days " : "") + hours % 24 + ":" + minutes % 60 + ":" + seconds % 60;
+        return "%s%s:%s:%s".formatted(withDays ? format.format(days) + " Days " : "",
+                format.format(hours % 24),
+                format.format(minutes % 60),
+                format.format(seconds % 60));
     }
 
     public long getSum(String[] data, String endtime) {
