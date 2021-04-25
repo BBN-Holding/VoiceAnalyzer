@@ -35,7 +35,7 @@ public class Conversation {
                         if (jsonObject.get(field.getName()) instanceof String) {
                             data = Arrays.asList(jsonObject.get(field.getName())).toArray(String[]::new);
                         } else {
-                            data = (String[]) jsonObject.get(field.getName());
+                            data = jsonObject.getJSONArray(field.getName()).toList().toArray(String[]::new);
                         }
                         field.set(this, data);
                     }
