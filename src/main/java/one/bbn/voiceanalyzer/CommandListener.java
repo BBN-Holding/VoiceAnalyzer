@@ -292,7 +292,7 @@ public class CommandListener extends ListenerAdapter {
                     for (int i = 0; i<conversations.length(); i++) {
                         Conversation conversation = new Conversation(conversations.getJSONObject(i));
                         if (Long.parseLong(conversation.getEndTime()) > reference.getTimeInMillis()) {
-                            Member memberobj = event.getGuild().getMemberById(member.getString("userid"));
+                            Member memberobj = event.getGuild().retrieveMemberById(member.getString("userid")).complete();
                             long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                             sb.append("%s - %s (%s - %s)\n".formatted(memberobj.getUser().getAsTag(),
