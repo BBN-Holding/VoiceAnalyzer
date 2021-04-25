@@ -288,14 +288,16 @@ public class CommandListener extends ListenerAdapter {
             reference.set(Calendar.SECOND, 0);
             members.forEach(memberconversation -> {
                 Conversation conversation = new Conversation(memberconversation);
-                if (Long.parseLong(conversation.getEndTime())>reference.getTimeInMillis()) {
-                    Member member = event.getGuild().getMemberById(conversation.getUserID());
-                    long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    sb.append("%s - %s (%s - %s)\n".formatted(member.getUser().getAsTag(),
-                            getTime(time, (time >= 86400000)),
-                            format.format(new Date(Long.parseLong(conversation.getStartTime()))),
-                            format.format(new Date(Long.parseLong(conversation.getEndTime())))));
+                if (Long.parseLong(conversation.getEndTime()) > reference.getTimeInMillis()) {
+                    if (conversation.getUserID() != null) {
+                        Member member = event.getGuild().getMemberById(conversation.getUserID());
+                        long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                        sb.append("%s - %s (%s - %s)\n".formatted(member.getUser().getAsTag(),
+                                getTime(time, (time >= 86400000)),
+                                format.format(new Date(Long.parseLong(conversation.getStartTime()))),
+                                format.format(new Date(Long.parseLong(conversation.getEndTime())))));
+                    }
                 }
             });
             event.getTextChannel().sendMessage(new EmbedBuilder()
