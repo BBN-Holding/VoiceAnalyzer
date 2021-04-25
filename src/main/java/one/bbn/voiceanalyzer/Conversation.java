@@ -32,6 +32,15 @@ public class Conversation {
                 if (jsonObject.has(field.getName()))
                     if (!(jsonObject.get(field.getName()) instanceof JSONArray))
                         field.set(this, jsonObject.get(field.getName()));
+                    else if (field.getName().equals("voiceChannel")) {
+                        String[] data;
+                        if (jsonObject.get(field.getName()) instanceof String) {
+                            data = Arrays.asList(jsonObject.get(field.getName())).toArray(String[]::new);
+                        } else {
+                            data = (String[]) jsonObject.get(field.getName());
+                        }
+                        field.set(this, data);
+                    }
                     else
                         field.set(this, jsonObject.getJSONArray(field.getName()).toList().toArray(String[]::new));
             }
