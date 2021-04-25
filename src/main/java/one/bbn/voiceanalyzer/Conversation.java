@@ -104,4 +104,7 @@ public class Conversation {
         this.idleTimes = idleTimes;
     }
 
+    public String getUserID() {
+        return userID;
+    }
 }

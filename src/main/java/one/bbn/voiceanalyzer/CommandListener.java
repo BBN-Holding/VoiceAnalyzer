@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -278,6 +279,27 @@ public class CommandListener extends ListenerAdapter {
                     .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                     .setTimestamp(Instant.now())
                     .build()).queue();
+        } else if (event.getMessage().getContentRaw().equals("+today")) {
+            List<JSONObject> members = mongo.getMembers(event.getGuild().getId());
+            StringBuilder sb = new StringBuilder();
+            Calendar reference = Calendar.getInstance();
+            reference.set(Calendar.HOUR, 0);
+            reference.set(Calendar.MINUTE, 0);
+            reference.set(Calendar.SECOND, 0);
+            members.forEach(memberconversation -> {
+                Conversation conversation = new Conversation(memberconversation);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(Long.parseLong(conversation.getEndTime()));
+                if (calendar.getTimeInMillis()>reference.getTimeInMillis()) {
+                    Member member = event.getGuild().getMemberById(conversation.getUserID());
+                    long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    sb.append("%s - %s (%s - %s)\n".formatted(member.getUser().getAsTag(),
+                            getTime(time, (time >= 86400000)),
+                            format.format(new Date(Long.parseLong(conversation.getStartTime()))),
+                            format.format(new Date(Long.parseLong(conversation.getEndTime())))));
+                }
+            });
         }
     }
 }
