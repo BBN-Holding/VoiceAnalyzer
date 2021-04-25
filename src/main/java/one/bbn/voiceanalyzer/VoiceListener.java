@@ -82,25 +82,7 @@ public class VoiceListener extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
-        // Stop and Start the conversation
-        mongo.stopConversation(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-        if (event.getChannelLeft().getMembers().size() == 1) {
-            mongo.setAfk(event.getChannelLeft().getMembers().get(0).getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-        }
-
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                mongo.startConversation(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId(), String.valueOf(System.currentTimeMillis()));
-                if (event.getChannelJoined().getMembers().size() == 2) {
-                    for (Member member : event.getChannelJoined().getMembers()) {
-                        mongo.setOnline(member.getId(), member.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                    }
-                } else if (event.getChannelJoined().getMembers().size() == 1) {
-                    mongo.setAfk(event.getMember().getId(), event.getGuild().getId(), String.valueOf(System.currentTimeMillis()));
-                }
-            }
-        }, 1000);
+        mongo.switchChannel(event.getMember().getId(), event.getGuild().getId(), event.getChannelJoined().getId());
     }
 
     @Override

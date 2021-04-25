@@ -25,12 +25,12 @@ public class CommandListener extends ListenerAdapter {
         this.config = config;
     }
 
-    public String getTime(Long ms) {
+    public String getTime(Long ms, boolean withDays) {
         long seconds = ms / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
         long days = hours / 24;
-        return days + " Days " + hours % 24 + ":" + minutes % 60 + ":" + seconds % 60;
+        return (withDays ? days + " Days " : "") + hours % 24 + ":" + minutes % 60 + ":" + seconds % 60;
     }
 
     public long getSum(String[] data, String endtime) {
@@ -105,7 +105,7 @@ public class CommandListener extends ListenerAdapter {
                             Member member = event.getGuild().retrieveMemberById(entry.getValue()).complete();
                             JSONObject memberjson = mongo.getMember(entry.getValue(), member.getGuild().getId());
                             data.put(memberjson.put("Tag", member.getUser().getAsTag()));
-                            sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey())).append("\n");
+                            sb.append((list.indexOf(entry) + 1)).append(". ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey(), true)).append("\n");
                         }
                     }
 
@@ -188,11 +188,11 @@ public class CommandListener extends ListenerAdapter {
                                 .setTitle("Stats")
                                 .setAuthor(member.getUser().getAsTag(), member.getUser().getEffectiveAvatarUrl(), member.getUser().getEffectiveAvatarUrl())
                                 .addField("Conversations", String.valueOf(conversations.length()), true)
-                                .addField("Time", getTime(finalConnected), true)
-                                .addField("Muted", getTime(finalMuted), true)
-                                .addField("Deafened", getTime(finalDeafed), true)
-                                .addField("Idle", getTime(finalIdle), true)
-                                .addField("Total", getTime(total), true)
+                                .addField("Time", getTime(finalConnected, true), true)
+                                .addField("Muted", getTime(finalMuted, true), true)
+                                .addField("Deafened", getTime(finalDeafed, true), true)
+                                .addField("Idle", getTime(finalIdle, true), true)
+                                .addField("Total", getTime(total, true), true)
                                 .setImage("attachment://chart.png")
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                                 .setTimestamp(Instant.now())
@@ -243,7 +243,10 @@ public class CommandListener extends ListenerAdapter {
                         LocalDateTime utc = LocalDateTime.ofInstant(date, ZoneOffset.UTC);
                         Instant date2 = Instant.ofEpochMilli(entry.getKey().getLong("endTime"));
                         LocalDateTime utc2 = LocalDateTime.ofInstant(date2, ZoneOffset.UTC);
-                        sb.append((list.indexOf(entry) + 1)).append(". ").append(utc).append(" -> ").append(utc2 ).append(": ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey().getLong("endTime") - entry.getKey().getLong("startTime"))).append("\n");
+                        sb.append((list.indexOf(entry) + 1)).append(". ").append(utc).append(" -> ").append(utc2)
+                                .append(": ").append(member.getUser().getAsTag()).append(" - ")
+                                .append(getTime(entry.getKey().getLong("endTime") - entry.getKey().getLong("startTime"), true))
+                                .append("\n");
                     }
                     event.getTextChannel().sendMessage(sb).queue();
                 } else {
@@ -253,6 +256,23 @@ public class CommandListener extends ListenerAdapter {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else if (event.getMessage().getContentRaw().equals("+now")) {
+            StringBuilder sb = new StringBuilder();
+            long current = System.currentTimeMillis();
+            event.getGuild().getVoiceChannels().forEach(voiceChannel -> {
+                voiceChannel.getMembers().forEach(member -> {
+                    Conversation conversation = new Conversation(mongo.getLastConversation(member.getUser().getId(), member.getGuild().getId()));
+                    long time = current - Long.parseLong(conversation.getStartTime());
+                    sb.append("%s - %s\n".formatted(member.getUser().getAsTag(), getTime(time, (time >= 86400000))));
+                });
+            });
+            event.getTextChannel().sendMessage(new EmbedBuilder()
+                    .setTitle("Stats - Today")
+                    .setAuthor(event.getMember().getUser().getAsTag(), event.getMember().getUser().getEffectiveAvatarUrl(), event.getMember().getUser().getEffectiveAvatarUrl())
+                    .setDescription(sb.toString())
+                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                    .setTimestamp(Instant.now())
+                    .build()).queue();
         }
     }
 }

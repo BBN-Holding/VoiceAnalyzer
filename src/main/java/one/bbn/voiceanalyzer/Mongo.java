@@ -140,6 +140,12 @@ public class Mongo {
         }
     }
 
+    public void switchChannel(String userid, String guildid, String voicechannel) {
+        Conversation conversation = new Conversation(getLastConversation(userid, guildid));
+        conversation.addVoiceChannel(voicechannel);
+        setLastConversation(userid, guildid, conversation);
+    }
+
     public void setDeafed(String userid, String guildid, String timestamp) {
         Conversation conversation = new Conversation(getLastConversation(userid, guildid));
 

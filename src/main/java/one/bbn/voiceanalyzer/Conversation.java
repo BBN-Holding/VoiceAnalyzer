@@ -4,12 +4,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Conversation {
 
     private String userID;
     private String guildID;
-    private String voiceChannel;
+    private String[] voiceChannel;
     private String startTime;
     private String endTime;
     private String[] muteTimes;
@@ -19,7 +21,7 @@ public class Conversation {
     public Conversation(String userid, String guildID, String voiceChannel, String startTime) {
         this.userID = userid;
         this.guildID = guildID;
-        this.voiceChannel = voiceChannel;
+        this.voiceChannel = Arrays.asList(voiceChannel).toArray(String[]::new);
         this.startTime = startTime;
     }
 
@@ -49,6 +51,12 @@ public class Conversation {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    public void addVoiceChannel(String voicechannel) {
+        ArrayList<String> vclist = new ArrayList(Arrays.asList(this.voiceChannel));
+        vclist.add(voicechannel);
+        this.voiceChannel = vclist.toArray(String[]::new);
     }
 
     public String getStartTime() {
