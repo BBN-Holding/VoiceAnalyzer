@@ -288,9 +288,7 @@ public class CommandListener extends ListenerAdapter {
             reference.set(Calendar.SECOND, 0);
             members.forEach(memberconversation -> {
                 Conversation conversation = new Conversation(memberconversation);
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(Long.parseLong(conversation.getEndTime()));
-                if (calendar.getTimeInMillis()>reference.getTimeInMillis()) {
+                if (Long.parseLong(conversation.getEndTime())>reference.getTimeInMillis()) {
                     Member member = event.getGuild().getMemberById(conversation.getUserID());
                     long time = Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime());
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
