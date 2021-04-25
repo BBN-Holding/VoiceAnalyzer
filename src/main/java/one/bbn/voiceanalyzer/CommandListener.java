@@ -10,8 +10,10 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.*;
 
 public class CommandListener extends ListenerAdapter {
 
@@ -205,6 +207,51 @@ public class CommandListener extends ListenerAdapter {
                                 .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                                 .setTimestamp(Instant.now())
                                 .build()).queue();
+            }
+        } else if (event.getMessage().getContentRaw().startsWith("+sus")) {
+            try {
+                HashMap<JSONObject, String> sus = new HashMap<>();
+                List<JSONObject> members = mongo.getMembers(event.getGuild().getId());
+
+                // Get all voice times
+                for (JSONObject member : members) {
+                    if (member.getJSONArray("conversations").length() != 0) {
+                        JSONArray conversations = member.getJSONArray("conversations");
+                        long time;
+                        for (int i = 0; i < conversations.length(); i++) {
+                            JSONObject conversationobj = conversations.getJSONObject(i);
+                            Conversation conversation = new Conversation(conversationobj);
+                            if (conversationobj.has("startTime") && (conversationobj.has("endTime") || i == conversations.length() - 1)) {
+                                time = (Long.parseLong(conversation.getEndTime()) - Long.parseLong(conversation.getStartTime()));
+                                if (time > 72000000) { // 20 hours
+                                    System.out.println(member.getString("userid") + " Conv. ID: " + i);
+                                    sus.put(conversationobj, member.getString("userid"));
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!sus.isEmpty()) {
+                    // Sort and reverse the list
+                    Set<Map.Entry<JSONObject, String>> set = sus.entrySet();
+                    List<Map.Entry<JSONObject, String>> list = new ArrayList<>(set);
+                    Collections.reverse(list);
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<JSONObject, String> entry : list) {
+                        Member member = event.getGuild().retrieveMemberById(entry.getValue()).complete();
+                        Instant date = Instant.ofEpochMilli(entry.getKey().getLong("startTime"));
+                        LocalDateTime utc = LocalDateTime.ofInstant(date, ZoneOffset.UTC);
+                        Instant date2 = Instant.ofEpochMilli(entry.getKey().getLong("endTime"));
+                        LocalDateTime utc2 = LocalDateTime.ofInstant(date2, ZoneOffset.UTC);
+                        sb.append((list.indexOf(entry) + 1)).append(". ").append(utc).append(" -> ").append(utc2 ).append(": ").append(member.getUser().getAsTag()).append(" - ").append(getTime(entry.getKey().getLong("endTime") - entry.getKey().getLong("startTime"))).append("\n");
+                    }
+                    event.getTextChannel().sendMessage(sb).queue();
+                } else {
+                    event.getTextChannel().sendMessage("No sus today.").queue();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

@@ -18,7 +18,14 @@ public class VoiceAnalyzer {
             File file = new File("config.json");
             if (!file.exists()) {
                 file.createNewFile();
-                Files.writeString(file.toPath(), "{\n" + "  \"token\": \"\",\n" + "  \"host\": \"\",\n" + "  \"username\": \"\",\n" + "  \"password\": \"\",\n" + "  \"port\": \n" + "}");
+                Files.writeString(file.toPath(), """
+                        {
+                          "token": "",
+                          "host": "",
+                          "username": "",
+                          "password": "",
+                          "port":\s
+                        }""");
                 System.err.println("Please fill your config.json!");
                 System.exit(0);
             }
