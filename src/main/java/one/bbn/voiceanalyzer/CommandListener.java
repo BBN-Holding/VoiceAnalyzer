@@ -273,7 +273,7 @@ public class CommandListener extends ListenerAdapter {
                 });
             });
             event.getTextChannel().sendMessage(new EmbedBuilder()
-                    .setTitle("Stats - Today")
+                    .setTitle("Stats - Now")
                     .setAuthor(event.getMember().getUser().getAsTag(), event.getMember().getUser().getEffectiveAvatarUrl(), event.getMember().getUser().getEffectiveAvatarUrl())
                     .setDescription(sb.toString())
                     .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
@@ -300,6 +300,13 @@ public class CommandListener extends ListenerAdapter {
                             format.format(new Date(Long.parseLong(conversation.getEndTime())))));
                 }
             });
+            event.getTextChannel().sendMessage(new EmbedBuilder()
+                    .setTitle("Stats - Today")
+                    .setAuthor(event.getMember().getUser().getAsTag(), event.getMember().getUser().getEffectiveAvatarUrl(), event.getMember().getUser().getEffectiveAvatarUrl())
+                    .setDescription(sb.toString())
+                    .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
+                    .setTimestamp(Instant.now())
+                    .build()).queue();
         }
     }
 }
