@@ -49,7 +49,11 @@ public class PlotCreator {
         final XYChart chart = new XYChartBuilder().width(1000).height(400).title("Statstop Graph").xAxisTitle("% of Starttime").yAxisTitle("% of Hours").build();
 
         // Customize Chart
-        chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Line);
+        chart.getStyler().setMarkerSize(0);
+        chart.getStyler().setYAxisMin(0.0);
+        chart.getStyler().setYAxisMax(100.0);
+        chart.getStyler().setXAxisMin(0.0);
+        chart.getStyler().setXAxisMax(100.0);
 
         // Series
         long higheststarttime = 0;
@@ -106,11 +110,6 @@ public class PlotCreator {
             }
             chart.addSeries(member.getString("Tag"), starttimes.stream().mapToDouble(d -> d).toArray(), sums.stream().mapToDouble(d -> d).toArray());
         }
-
-        chart.getStyler().setYAxisMin(0.0);
-        chart.getStyler().setYAxisMax(100.0);
-        chart.getStyler().setXAxisMin(0.0);
-        chart.getStyler().setXAxisMax(100.0);
 
         // Save it
         try {
