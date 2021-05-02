@@ -10,7 +10,6 @@ import org.json.JSONObject;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -60,6 +59,7 @@ public class CommandListener extends ListenerAdapter {
                             .setTitle("Help")
                             .addField("+stats", "Shows your own voice stats", true)
                             .addField("+statstop", "Shows the guild voice leaderboard", true)
+                            .addField("+now", "Shows all active voice members", true)
                             .setFooter("Provided by BBN", "https://bbn.one/images/avatar.png")
                             .setTimestamp(Instant.now())
                             .build()).queue();
