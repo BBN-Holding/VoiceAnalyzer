@@ -4,6 +4,8 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.botblock.javabotblockapi.core.BotBlockAPI;
+import org.botblock.javabotblockapi.core.Site;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
@@ -22,8 +24,6 @@ public class VoiceAnalyzer {
                         {
                           "token": "",
                           "host": "",
-                          "username": "",
-                          "password": "",
                           "port":\s
                         }""");
                 System.err.println("Please fill your config.json!");
@@ -35,8 +35,12 @@ public class VoiceAnalyzer {
             Mongo mongo = new Mongo(config);
             mongo.connect();
 
+            BotBlockAPI api = new BotBlockAPI.Builder()
+                    .addAuthToken(Site.BLADEBOTLIST_XYZ, config.getString("bladebotlist_xyz"))
+                    .build();
+
             JDABuilder.create(config.getString("token"), GatewayIntent.getIntents(640))
-                    .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config))
+                    .addEventListeners(new VoiceListener(mongo, config), new CommandListener(mongo, config), new GuildListener(config, api))
                     .setActivity(Activity.listening("Voice Channels"))
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS)
                     .build();
