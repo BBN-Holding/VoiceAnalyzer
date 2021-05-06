@@ -263,15 +263,24 @@ public class CommandListener extends ListenerAdapter {
                 e.printStackTrace();
             }
         } else if (event.getMessage().getContentRaw().equals("+now")) {
-            StringBuilder sb = new StringBuilder();
+            HashMap<Long, Member> times = new HashMap<>();
             long current = System.currentTimeMillis();
             event.getGuild().getVoiceChannels().forEach(voiceChannel -> {
                 voiceChannel.getMembers().forEach(member -> {
                     Conversation conversation = new Conversation(mongo.getLastConversation(member.getUser().getId(), member.getGuild().getId()));
                     long time = current - Long.parseLong(conversation.getStartTime());
-                    sb.append("%s - %s\n".formatted(member.getUser().getAsTag(), getTime(time, (time >= 86400000))));
+                    times.put(time, member);
                 });
             });
+
+            // Sort and reverse the list
+            Set<Map.Entry<Long, Member>> set = times.entrySet();
+            List<Map.Entry<Long, Member>> list = new ArrayList<>(set);
+            list.sort((Map.Entry.comparingByKey()));
+            Collections.reverse(list);
+
+            StringBuilder sb = new StringBuilder();
+            list.forEach(entry -> sb.append("%s - %s\n".formatted(getTime(entry.getKey(), (entry.getKey() >= 86400000)), entry.getValue().getUser().getAsTag())));
             event.getTextChannel().sendMessage(new EmbedBuilder()
                     .setTitle("Stats - Now")
                     .setAuthor(event.getMember().getUser().getAsTag(), event.getMember().getUser().getEffectiveAvatarUrl(), event.getMember().getUser().getEffectiveAvatarUrl())
