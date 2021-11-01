@@ -17,7 +17,7 @@ dependencies {
     implementation('net.dv8tion:JDA:4.2.0_247') {
         exclude module: 'opus-java'
     }
-    implementation 'org.mongodb:mongodb-driver-sync:4.2.3'
+    implementation 'org.mongodb:mongodb-driver-sync:4.3.3'
     implementation 'org.json:json:20210307'
     implementation 'org.knowm.xchart:xchart:3.8.0'
     implementation 'org.slf4j:slf4j-simple:1.7.31'
