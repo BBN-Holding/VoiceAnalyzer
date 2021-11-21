@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.knowm.xchart:xchart:3.8.0'
     implementation 'org.slf4j:slf4j-simple:1.7.31'
     implementation 'org.botblock:javabotblockapi-core:6.7.0_343'
-    implementation 'org.botblock:javabotblockapi-request:6.7.0_343'
+    implementation 'org.botblock:javabotblockapi-request:6.7.4_347'
 }
 
 shadowJar {
