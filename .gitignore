@@ -1,45 +1,40 @@
-# Compiled class file
-*.class
-
-# Log file
+lib-cov
+*.seed
 *.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+*.swp
 
-# BlueJ files
-*.ctxt
+pids
+logs
+results
+tmp
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# Build
+public/css/main.css
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+# Coverage reports
+coverage
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# API keys and secrets
+.env
 
-# Gradle FIles
-.gradle
-**/build/
-!src/**/build/
+# Dependency directory
+node_modules
+bower_components
 
-# Ignore Gradle GUI config
-gradle-app.setting
+# Editors
+.idea
+*.iml
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
+# OS metadata
+.DS_Store
+Thumbs.db
 
-# Cache of project
-.gradletasknamecache
+# Ignore built ts files
+dist/**/*
 
 config.json
-
-.idea/
-
-VoiceAnalyzer.iml
-
-target/

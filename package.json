@@ -1,0 +1,23 @@
+{
+    "name": "voiceanalyzer",
+    "version": "3.0.0",
+    "description": "",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BBN-Holding/VoiceAnalyzer.git"
+    },
+    "scripts": {
+        "start": "ts-node index.ts"
+    },
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/BBN-Holding/VoiceAnalyzer/issues"
+    },
+    "homepage": "https://github.com/BBN-Holding/VoiceAnalyzer#readme",
+    "dependencies": {
+        "@discordjs/rest": "^0.2.0-canary.0",
+        "discord.js": "^13.3.1",
+        "mongodb": "^4.2.2"
+    }
+}
