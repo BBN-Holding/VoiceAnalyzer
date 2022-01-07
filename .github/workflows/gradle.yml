@@ -1,6 +1,6 @@
 name: VoiceAnalyzer
 
-on: [ push ]
+on: [ release ]
 
 jobs:
   build:
