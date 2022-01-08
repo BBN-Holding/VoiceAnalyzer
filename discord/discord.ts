@@ -25,7 +25,7 @@ class DiscordManager {
             console.log('Started refreshing application (/) commands.');
 
             rest.put(
-                Routes.applicationCommands("546041858929852418"),
+                Routes.applicationCommands("715897534874386473"),
                 { body: commands },
             ).then(() => {
                 console.log('Successfully reloaded application (/) commands.');
@@ -51,12 +51,12 @@ class DiscordManager {
 
             client.on('interactionCreate', async (interaction: any) => {
                 if (!interaction.isCommand()) return;
-            
+
                 if (interaction.commandName === 'ping') {
                     await interaction.reply('Pong!');
                 }
             });
-            
+
             client.login(this.token);
         })
     }

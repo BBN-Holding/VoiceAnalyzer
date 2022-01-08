@@ -1,20 +1,31 @@
-import { MongoClient } from 'mongodb';
+import { Collection, MongoClient } from 'mongodb';
 
 
 class MongoManager {
 
-    mclient: MongoClient;
+    client: MongoClient;
 
     constructor(url: string) {
-        this.mclient = new MongoClient(url);
+        this.client = new MongoClient(url);
     }
 
     connect() {
-        return this.mclient.connect();
+        return this.client.connect();
     }
 
     collection() {
-        return this.mclient.db('TestBot').collection('conversations');
+        type Conversation = {
+            userid: string,
+            guildid: string,
+            channelid: string,
+            startTime: Date,
+            endTime: null | Date,
+            mutes: [],
+            deafs: []
+          }
+
+        const Conversations: Collection<Conversation> = this.client.db("TestBot").collection('conversations');
+        return Conversations;
     }
 
     createConversation(userid: string, guildid: string, channelid: string, startTime: Date) {
@@ -54,7 +65,6 @@ class MongoManager {
             userid: userid,
             guildid: guildid
         }, {
-            // @ts-ignore
             $push: {
                 mutes: muteTime
             }
@@ -68,7 +78,6 @@ class MongoManager {
             userid: userid,
             guildid: guildid
         }, {
-            // @ts-ignore
             $push: {
                 deafs: deafTime
             }
