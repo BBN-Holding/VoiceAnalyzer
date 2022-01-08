@@ -20,7 +20,6 @@ class DiscordManager {
                 name: 'ping',
                 description: 'Replies with Pong!'
             }];
-            console.log(this.token)
             const rest = new REST({ version: '9' }).setToken(this.token);
 
             console.log('Started refreshing application (/) commands.');
@@ -39,7 +38,8 @@ class DiscordManager {
     start() {
         const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] });
 
-        fs.readdir('./events', (err, files) => {
+        fs.readdir('./discord/events', (err, files) => {
+            if (err) return console.error(err);
             files.forEach(file => {
                 const event = require(`./events/${file}`);
                 if (event.once) {
