@@ -20,9 +20,9 @@ class MongoManager {
             channelid: string,
             startTime: Date,
             endTime: null | Date,
-            mutes: [],
-            deafs: []
-          }
+            mutes: Date[],
+            deafs: Date[]
+        }
 
         const Conversations: Collection<Conversation> = this.client.db("TestBot").collection('conversations');
         return Conversations;
